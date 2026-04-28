@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wealth vs. Income Inequality — Sweden</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script type="module" crossorigin src="/SwedenWealthContribution/assets/index-xMLkUyP0.js"></script>
-    <link rel="stylesheet" crossorigin href="/SwedenWealthContribution/assets/index-DDQymsXC.css">
+    <script type="module" crossorigin src="/SwedenWealthContribution/assets/index-CcW4sacr.js"></script>
+    <link rel="stylesheet" crossorigin href="/SwedenWealthContribution/assets/index-DIiwmjme.css">
   </head>
   <body>
     <div id="app">
@@ -61,6 +61,22 @@
 
         <p id="cwi-meta" class="cwi-meta"></p>
         <p id="cwi-note" class="cwi-note"></p>
+
+        <!-- Y-axis viewport control — shown only for line charts -->
+        <div id="cwi-yview" class="cwi-yview hidden">
+          <span class="cwi-yview-title">Y-axis view</span>
+          <label class="cwi-yview-label">
+            Max
+            <input type="range" id="cwi-ymax-slider" min="0" max="1000" value="1000" />
+            <span id="cwi-ymax-val" class="cwi-yview-val"></span>
+          </label>
+          <label class="cwi-yview-label">
+            Min
+            <input type="range" id="cwi-ymin-slider" min="0" max="1000" value="0" />
+            <span id="cwi-ymin-val" class="cwi-yview-val"></span>
+          </label>
+          <button id="cwi-yview-reset" class="cwi-small-btn">↺ Full range</button>
+        </div>
 
         <div id="cwi-render-root" class="cwi-render-root"></div>
 
