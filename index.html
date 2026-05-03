@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Wealth vs. Income Inequality — Sweden</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
-    <script type="module" crossorigin src="/SwedenWealthContribution/assets/index-M8zlGDxp.js"></script>
-    <link rel="stylesheet" crossorigin href="/SwedenWealthContribution/assets/index-DG55giDu.css">
+    <script type="module" crossorigin src="/SwedenWealthContribution/assets/index-At57Idfu.js"></script>
+    <link rel="stylesheet" crossorigin href="/SwedenWealthContribution/assets/index-DZKcUPHA.css">
   </head>
   <body>
     <div id="app">
@@ -52,7 +52,18 @@
           </label>
         </div>
 
-        <!-- Axis zoom — shown for line, bar, stacked charts -->
+        <!-- Y-axis scale type — shown only for line chart -->
+        <div id="cwi-yscale-ctrl" class="cwi-yscale-ctrl hidden">
+          <span class="cwi-yview-title">Y-axis scale</span>
+          <label class="cwi-yscale-opt">
+            <input type="radio" name="cwiYScale" value="linear" id="cwi-yscale-linear" checked> Linear
+          </label>
+          <label class="cwi-yscale-opt">
+            <input type="radio" name="cwiYScale" value="break" id="cwi-yscale-break"> Scale break
+          </label>
+        </div>
+
+        <!-- Axis zoom — shown for line (linear), bar, stacked charts -->
         <div id="cwi-yview" class="cwi-yview hidden">
           <span class="cwi-yview-title">Axis zoom</span>
           <label class="cwi-yview-label">
