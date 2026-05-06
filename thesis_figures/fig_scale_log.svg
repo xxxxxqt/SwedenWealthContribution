@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="255" font-family="Arial,Helvetica,sans-serif">
+<rect width="440" height="255" fill="#fff" rx="5" stroke="#dee2e6" stroke-width="1"/>
+<text x="220" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#212529">Fig 2 — Logarithmic Scale</text>
+<text x="220" y="30" text-anchor="middle" font-size="9" fill="#6c757d">Y axis: log₁₀  (positive values only) · equal px per decade · B50% excluded</text>
+
+<!-- chart area x=[80,340] y=[42,222] (180px) -->
+<!-- log scale: 1M to 30 000M (30B).  log10(1)=0 .. log10(30000)=4.477 -->
+<!-- y(v) = 222 − 180 × log10(v) / 4.477   (v in M) -->
+<!-- each decade = 180/4.477 = 40.2 px -->
+<!-- ticks: 1M→y=222  10M→y=182  100M→y=142  1B→y=102  10B→y=62  30B→y=42 -->
+
+<!-- grid (one line per decade = equal px spacing = log scale) -->
+<line x1="80" y1="182" x2="340" y2="182" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="142" x2="340" y2="142" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="102" x2="340" y2="102" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="62"  x2="340" y2="62"  stroke="#f1f3f5" stroke-width="1"/>
+
+<!-- minor grid: 2M,3M..9M between 1M and 10M etc. (sub-decade) -->
+<!-- log10(2)=0.301→y=209.9  log10(3)=0.477→y=200.5  log10(5)=0.699→y=190.0 -->
+<line x1="80" y1="210" x2="340" y2="210" stroke="#f8f9fa" stroke-width="0.7"/>
+<line x1="80" y1="200" x2="340" y2="200" stroke="#f8f9fa" stroke-width="0.7"/>
+<line x1="80" y1="190" x2="340" y2="190" stroke="#f8f9fa" stroke-width="0.7"/>
+<!-- 2×10M=20M: log10(20)=1.301→y=169.6  5×10M=50M: log10(50)=1.699→y=153.6 -->
+<line x1="80" y1="170" x2="340" y2="170" stroke="#f8f9fa" stroke-width="0.7"/>
+<line x1="80" y1="154" x2="340" y2="154" stroke="#f8f9fa" stroke-width="0.7"/>
+<!-- 200M:log10(200)=2.301→y=129.6  500M:log10(500)=2.699→y=113.6 -->
+<line x1="80" y1="130" x2="340" y2="130" stroke="#f8f9fa" stroke-width="0.7"/>
+<line x1="80" y1="114" x2="340" y2="114" stroke="#f8f9fa" stroke-width="0.7"/>
+<!-- 2B:log10(2000)=3.301→y=89.5  5B:log10(5000)=3.699→y=73.6 -->
+<line x1="80" y1="90"  x2="340" y2="90"  stroke="#f8f9fa" stroke-width="0.7"/>
+<line x1="80" y1="74"  x2="340" y2="74"  stroke="#f8f9fa" stroke-width="0.7"/>
+
+<!-- axes -->
+<line x1="80" y1="42" x2="80" y2="222" stroke="#495057" stroke-width="1.5"/>
+<line x1="80" y1="222" x2="340" y2="222" stroke="#495057" stroke-width="1.5"/>
+
+<!-- Y ticks — one per decade, equal spacing = correct log axis -->
+<line x1="77" y1="222" x2="80" y2="222" stroke="#495057"/><text x="74" y="225" text-anchor="end" font-size="9" fill="#495057">1M</text>
+<line x1="77" y1="182" x2="80" y2="182" stroke="#495057"/><text x="74" y="185" text-anchor="end" font-size="9" fill="#495057">10M</text>
+<line x1="77" y1="142" x2="80" y2="142" stroke="#495057"/><text x="74" y="145" text-anchor="end" font-size="9" fill="#495057">100M</text>
+<line x1="77" y1="102" x2="80" y2="102" stroke="#495057"/><text x="74" y="105" text-anchor="end" font-size="9" fill="#495057">1B</text>
+<line x1="77" y1="62"  x2="80" y2="62"  stroke="#495057"/><text x="74" y="65"  text-anchor="end" font-size="9" fill="#495057">10B</text>
+<line x1="77" y1="42"  x2="80" y2="42"  stroke="#495057"/><text x="74" y="45"  text-anchor="end" font-size="9" fill="#495057">30B</text>
+
+<text transform="rotate(-90,18,132)" x="18" y="132" text-anchor="middle" font-size="9" fill="#6c757d">Wealth (SEK, log scale)</text>
+
+<line x1="80"  y1="222" x2="80"  y2="226" stroke="#495057"/><text x="80"  y="235" text-anchor="middle" font-size="9" fill="#495057">1980</text>
+<line x1="139" y1="222" x2="139" y2="226" stroke="#495057"/><text x="139" y="235" text-anchor="middle" font-size="9" fill="#495057">1990</text>
+<line x1="199" y1="222" x2="199" y2="226" stroke="#495057"/><text x="199" y="235" text-anchor="middle" font-size="9" fill="#495057">2000</text>
+<line x1="258" y1="222" x2="258" y2="226" stroke="#495057"/><text x="258" y="235" text-anchor="middle" font-size="9" fill="#495057">2010</text>
+<line x1="340" y1="222" x2="340" y2="226" stroke="#495057"/><text x="340" y="235" text-anchor="middle" font-size="9" fill="#495057">2024</text>
+<text x="210" y="248" text-anchor="middle" font-size="9" fill="#6c757d">Year</text>
+
+<!-- B50% excluded (negative → no log) -->
+<rect x="80" y="215" width="260" height="9" fill="none"/>
+<text x="210" y="221" text-anchor="middle" font-size="8" fill="#adb5bd" font-style="italic">Bottom 50% excluded — negative wealth has no log representation</text>
+
+<!-- Top 10%: 5→6→8→11→15 M -->
+<!-- y=222−40.2×log10(v): 5→194  6→191  8→186  11→180  15→175 -->
+<polyline points="80,194 139,191 199,186 258,180 340,175" fill="none" stroke="#ffa94d" stroke-width="1.8"/>
+<text x="342" y="177" font-size="8" fill="#ffa94d">T10%</text>
+
+<!-- Top 0.001%: 800→1000→4000→12000→24500 M -->
+<!-- log10: 2.903→101  3.0→101  3.602→77  4.079→58  4.389→46 -->
+<!-- y: 222−40.2×2.903=105  222−40.2×3=101  222−40.2×3.602=77  222−40.2×4.079=58  222−40.2×4.389=46 -->
+<polyline points="80,105 139,101 199,77 258,58 340,46" fill="none" stroke="#c92a2a" stroke-width="2"/>
+<text x="342" y="48" font-size="8" fill="#c92a2a">T0.001%</text>
+</svg>

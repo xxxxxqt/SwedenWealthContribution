@@ -1,0 +1,10 @@
+[
+  {"year": "2000", "group": "Bottom50", "share": "1.2"},
+  {"year": "2000", "group": "Middle40", "share": "20.5"},
+  {"year": "2000", "group": "Next9", "share": "25.3"},
+  {"year": "2000", "group": "Top1", "share": "52.0"},
+  {"year": "2022", "group": "Bottom50", "share": "0.6"},
+  {"year": "2022", "group": "Middle40", "share": "17.8"},
+  {"year": "2022", "group": "Next9", "share": "23.2"},
+  {"year": "2022", "group": "Top1", "share": "58.4"}
+]

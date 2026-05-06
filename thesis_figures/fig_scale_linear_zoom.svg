@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="255" font-family="Arial,Helvetica,sans-serif">
+<rect width="440" height="255" fill="#fff" rx="5" stroke="#dee2e6" stroke-width="1"/>
+<text x="220" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#212529">Fig 4 — Linear Scale + Zoom Window  (chosen approach)</text>
+<text x="220" y="30" text-anchor="middle" font-size="9" fill="#6c757d">Y axis: linear  −1M to 20M window · T0.001% clipped above · axis stays linear</text>
+
+<!-- chart area x=[80,340] y=[42,222] (180px) -->
+<!-- y(v) = 222 − 180×(v+1)/21   (v in M) -->
+<!-- y(−1)=222  y(0)=213  y(5)=171  y(10)=129  y(15)=86  y(20)=42 -->
+
+<line x1="80" y1="213" x2="340" y2="213" stroke="#dee2e6" stroke-width="0.8" stroke-dasharray="3 2"/>
+<line x1="80" y1="171" x2="340" y2="171" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="129" x2="340" y2="129" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="86"  x2="340" y2="86"  stroke="#f1f3f5" stroke-width="1"/>
+
+<line x1="80" y1="42" x2="80" y2="222" stroke="#495057" stroke-width="1.5"/>
+<line x1="80" y1="222" x2="340" y2="222" stroke="#495057" stroke-width="1.5"/>
+
+<!-- zero line -->
+<line x1="80" y1="213" x2="340" y2="213" stroke="#868e96" stroke-width="0.8" stroke-dasharray="4 3"/>
+
+<line x1="77" y1="222" x2="80" y2="222" stroke="#495057"/><text x="74" y="225" text-anchor="end" font-size="9" fill="#495057">−1M</text>
+<line x1="77" y1="213" x2="80" y2="213" stroke="#495057"/><text x="75" y="211" text-anchor="end" font-size="8" fill="#868e96">0</text>
+<line x1="77" y1="171" x2="80" y2="171" stroke="#495057"/><text x="74" y="174" text-anchor="end" font-size="9" fill="#495057">5M</text>
+<line x1="77" y1="129" x2="80" y2="129" stroke="#495057"/><text x="74" y="132" text-anchor="end" font-size="9" fill="#495057">10M</text>
+<line x1="77" y1="86"  x2="80" y2="86"  stroke="#495057"/><text x="74" y="89"  text-anchor="end" font-size="9" fill="#495057">15M</text>
+<line x1="77" y1="42"  x2="80" y2="42"  stroke="#495057"/><text x="74" y="45"  text-anchor="end" font-size="9" fill="#495057">20M</text>
+<text transform="rotate(-90,18,132)" x="18" y="132" text-anchor="middle" font-size="9" fill="#6c757d">Wealth (SEK)</text>
+
+<line x1="80"  y1="222" x2="80"  y2="226" stroke="#495057"/><text x="80"  y="235" text-anchor="middle" font-size="9" fill="#495057">1980</text>
+<line x1="139" y1="222" x2="139" y2="226" stroke="#495057"/><text x="139" y="235" text-anchor="middle" font-size="9" fill="#495057">1990</text>
+<line x1="199" y1="222" x2="199" y2="226" stroke="#495057"/><text x="199" y="235" text-anchor="middle" font-size="9" fill="#495057">2000</text>
+<line x1="258" y1="222" x2="258" y2="226" stroke="#495057"/><text x="258" y="235" text-anchor="middle" font-size="9" fill="#495057">2010</text>
+<line x1="340" y1="222" x2="340" y2="226" stroke="#495057"/><text x="340" y="235" text-anchor="middle" font-size="9" fill="#495057">2024</text>
+<text x="210" y="248" text-anchor="middle" font-size="9" fill="#6c757d">Year</text>
+
+<defs><clipPath id="zc"><rect x="80" y="42" width="260" height="180"/></clipPath></defs>
+
+<!-- B50%: 0.1→0.05→0→−0.4→−0.7 M -->
+<!-- y=222−180×(v+1)/21: v=0.1→213  v=0→213  v=−0.4→217  v=−0.7→219 -->
+<polyline points="80,213 139,213 199,213 258,217 340,219" fill="none" stroke="#4dabf7" stroke-width="1.8" clip-path="url(#zc)"/>
+<text x="342" y="220" font-size="8" fill="#4dabf7">B50%</text>
+
+<!-- T10%: 5→6→8→11→15 M -->
+<!-- v=5:222−180×6/21=171  v=6:222−180×7/21=162  v=8:222−180×9/21=145  v=11:222−180×12/21=119  v=15:222−180×16/21=85 -->
+<polyline points="80,171 139,162 199,145 258,119 340,85" fill="none" stroke="#ffa94d" stroke-width="1.8" clip-path="url(#zc)"/>
+<text x="342" y="85" font-size="8" fill="#ffa94d">T10%</text>
+
+<!-- T0.001%: all values >> 20M → clipped at top of chart -->
+<line x1="80" y1="42" x2="340" y2="42" stroke="#c92a2a" stroke-width="2" stroke-dasharray="4 2" opacity="0.6"/>
+<polygon points="195,42 190,50 200,50" fill="#c92a2a" opacity="0.8"/>
+<polygon points="255,42 250,50 260,50" fill="#c92a2a" opacity="0.8"/>
+<text x="210" y="59" text-anchor="middle" font-size="8" fill="#c92a2a">T0.001% clipped — value 800M→24.5B far above window</text>
+
+<!-- Zoom slider sketch -->
+<rect x="358" y="42" width="7" height="180" rx="3" fill="#e9ecef"/>
+<rect x="356" y="175" width="11" height="14" rx="3" fill="#868e96"/>
+<text x="362" y="36"  text-anchor="middle" font-size="8" fill="#adb5bd">+</text>
+<text x="362" y="234" text-anchor="middle" font-size="9" fill="#adb5bd">−</text>
+<text x="362" y="246" text-anchor="middle" font-size="7" fill="#adb5bd">zoom</text>
+</svg>

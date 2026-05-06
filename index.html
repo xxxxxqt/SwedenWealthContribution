@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wealth vs. Income Inequality — Sweden</title>
+    <link rel="stylesheet" href="./src/style.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <section id="compare-wi-section" class="story-shell">
+        <h1 class="story-title">Wealth vs. Income Inequality — Side by Side</h1>
+
+        <div class="cwi-controls-bar">
+          <label>
+            Years (comma-separated)
+            <input type="text" id="cwi-years-input" value="1980,1990,2000,2010,2020,2024" />
+          </label>
+          <label>
+            Representation
+            <select id="cwi-representation">
+              <option value="table">Table</option>
+              <option value="line">Line chart</option>
+              <option value="stacked">Stacked area</option>
+              <option value="bar" selected>Bar chart</option>
+              <option value="waffle">Waffle chart</option>
+            </select>
+          </label>
+          <label>
+            Comparison
+            <select id="cwi-comparison">
+              <option value="juxtaposition" selected>Juxtaposition</option>
+              <option value="superposition">Superposition</option>
+              <option value="animation">Animation</option>
+            </select>
+          </label>
+          <label>
+            Metric
+            <select id="cwi-metric">
+              <option value="income" selected>Income only</option>
+              <option value="wealth">Wealth only</option>
+            </select>
+          </label>
+          <label>
+            Population encoding
+            <select id="cwi-pop-encoding">
+              <option value="without" selected>Without</option>
+              <option value="with">With</option>
+            </select>
+          </label>
+        </div>
+
+        <!-- Y-axis scale type — shown only for line chart -->
+        <div id="cwi-yscale-ctrl" class="cwi-yscale-ctrl hidden">
+          <span class="cwi-yview-title">Y-axis scale</span>
+          <label class="cwi-yscale-opt">
+            <input type="radio" name="cwiYScale" value="linear-zoom" id="cwi-yscale-linear-zoom" checked> Linear + zoom
+          </label>
+          <label class="cwi-yscale-opt">
+            <input type="radio" name="cwiYScale" value="linear" id="cwi-yscale-linear"> Linear
+          </label>
+          <label class="cwi-yscale-opt">
+            <input type="radio" name="cwiYScale" value="break" id="cwi-yscale-break"> Scale break
+          </label>
+          <label class="cwi-yscale-opt" id="cwi-yscale-log-opt" style="display:none">
+            <input type="radio" name="cwiYScale" value="log" id="cwi-yscale-log"> Logarithmic
+          </label>
+        </div>
+
+        <!-- Axis zoom — shown for line (linear), bar, stacked charts -->
+        <div id="cwi-yview" class="cwi-yview hidden">
+          <span class="cwi-yview-title">Axis zoom</span>
+          <label class="cwi-yview-label">
+            Top of window
+            <input type="range" id="cwi-ymax-slider" min="0" max="1000" value="1000" />
+            <span id="cwi-ymax-val" class="cwi-yview-val"></span>
+          </label>
+          <button id="cwi-yview-reset" class="cwi-small-btn">↺ Full range</button>
+          <span class="cwi-yview-hint">Slide left to zoom in · right to zoom out</span>
+        </div>
+
+        <div id="cwi-render-root" class="cwi-render-root"></div>
+
+        <div id="cwi-tooltip" class="tooltip story-tooltip"></div>
+      </section>
+    </div>
+
+    <script type="module" src="./src/main.js"></script>
+    <script type="module">
+      import { initStudy } from './src/study.js';
+      initStudy();
+    </script>
+  </body>
+</html>

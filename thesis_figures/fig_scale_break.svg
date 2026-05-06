@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="255" font-family="Arial,Helvetica,sans-serif">
+<rect width="440" height="255" fill="#fff" rx="5" stroke="#dee2e6" stroke-width="1"/>
+<text x="220" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#212529">Fig 3 — Scale Break (Broken Y-Axis)</text>
+<text x="220" y="30" text-anchor="middle" font-size="9" fill="#6c757d">Y axis broken: lower 0..20M · zig-zag break · upper 20B..26B</text>
+
+<!-- ── LOWER SECTION  y=[130,222]  Y range −1M to 20M ── -->
+<!-- y_lo(v) = 222 − 92×(v+1)/21   (v in M) -->
+<!-- y_lo(−1)=222  y_lo(0)=218  y_lo(5)=183  y_lo(10)=149  y_lo(15)=115  y_lo(20)=130 -->
+
+<line x1="80" y1="183" x2="340" y2="183" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="149" x2="340" y2="149" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="130" x2="340" y2="130" stroke="#f1f3f5" stroke-width="1"/>
+
+<line x1="80" y1="130" x2="80" y2="222" stroke="#495057" stroke-width="1.5"/>
+<line x1="80" y1="222" x2="340" y2="222" stroke="#495057" stroke-width="1.5"/>
+
+<!-- zero line in lower section -->
+<line x1="80" y1="218" x2="340" y2="218" stroke="#adb5bd" stroke-width="0.7" stroke-dasharray="3 2"/>
+
+<line x1="77" y1="218" x2="80" y2="218" stroke="#495057"/><text x="74" y="221" text-anchor="end" font-size="9" fill="#495057">0</text>
+<line x1="77" y1="183" x2="80" y2="183" stroke="#495057"/><text x="74" y="186" text-anchor="end" font-size="9" fill="#495057">5M</text>
+<line x1="77" y1="149" x2="80" y2="149" stroke="#495057"/><text x="74" y="152" text-anchor="end" font-size="9" fill="#495057">10M</text>
+<line x1="77" y1="130" x2="80" y2="130" stroke="#495057"/><text x="74" y="133" text-anchor="end" font-size="9" fill="#495057">20M</text>
+
+<!-- Lower section lines -->
+<!-- B50%: 0.1→0.05→0→−0.4→−0.7 M  →  y_lo: 217→218→218→221→222 -->
+<polyline points="80,217 139,218 199,218 258,221 340,222" fill="none" stroke="#4dabf7" stroke-width="1.8"/>
+<text x="342" y="222" font-size="8" fill="#4dabf7">B50%</text>
+
+<!-- T10%: 5→6→8→11→15 M  →  y_lo: 183→179→170→155→130 -->
+<!-- y_lo(5)=222−92×6/21=222−26.3=195.7... wait let me redo: -->
+<!-- y_lo(v)=222−92×(v+1)/21 -->
+<!-- v=5: 222−92×6/21=222−26.3=195.7≈196  v=6:222−92×7/21=222−30.7=191  -->
+<!-- v=8:222−92×9/21=222−39.4=183  v=11:222−92×12/21=222−52.6=169  v=15:222−92×16/21=222−70.1=152 -->
+<polyline points="80,196 139,191 199,183 258,169 340,152" fill="none" stroke="#ffa94d" stroke-width="1.8"/>
+<text x="342" y="152" font-size="8" fill="#ffa94d">T10%</text>
+
+<!-- T0.001% not visible in lower section (all >> 20M) -->
+<text x="210" y="140" text-anchor="middle" font-size="8" fill="#c92a2a" font-style="italic">T0.001% far above ↑ (not visible in lower section)</text>
+
+<!-- ── BREAK INDICATOR  y=[120,130] ── -->
+<!-- Zig-zag on the Y axis to indicate discontinuity -->
+<rect x="75" y="120" width="266" height="10" fill="#fff"/>
+<line x1="75" y1="120" x2="346" y2="120" stroke="#fff" stroke-width="2"/>
+<line x1="75" y1="130" x2="346" y2="130" stroke="#fff" stroke-width="2"/>
+<!-- Zigzag marks on the axis -->
+<polyline points="76,120 82,127 88,120 94,127 100,120 106,127 112,120" fill="none" stroke="#868e96" stroke-width="1.5"/>
+<polyline points="76,124 82,130 88,124 94,130 100,124 106,130 112,124" fill="none" stroke="#868e96" stroke-width="1.5"/>
+<text x="185" y="127" font-size="8" fill="#868e96" font-style="italic">axis break — conceals ~20B of range</text>
+
+<!-- ── UPPER SECTION  y=[42,120]  Y range 20B to 26B ── -->
+<!-- y_hi(v) = 120 − 78×(v−20000)/6000  (v in M) -->
+<!-- y_hi(20000)=120  y_hi(22000)=94  y_hi(24000)=68  y_hi(26000)=42 -->
+
+<line x1="80" y1="42"  x2="80" y2="120" stroke="#495057" stroke-width="1.5"/>
+<line x1="80" y1="94"  x2="340" y2="94"  stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="68"  x2="340" y2="68"  stroke="#f1f3f5" stroke-width="1"/>
+
+<line x1="77" y1="120" x2="80" y2="120" stroke="#495057"/><text x="74" y="123" text-anchor="end" font-size="9" fill="#495057">20B</text>
+<line x1="77" y1="94"  x2="80" y2="94"  stroke="#495057"/><text x="74" y="97"  text-anchor="end" font-size="9" fill="#495057">22B</text>
+<line x1="77" y1="68"  x2="80" y2="68"  stroke="#495057"/><text x="74" y="71"  text-anchor="end" font-size="9" fill="#495057">24B</text>
+<line x1="77" y1="42"  x2="80" y2="42"  stroke="#495057"/><text x="74" y="45"  text-anchor="end" font-size="9" fill="#495057">26B</text>
+
+<!-- T0.001% in upper section: 2020≈21B, 2022≈23B, 2024≈24.5B -->
+<!-- y_hi(21000)=120−78×1000/6000=120−13=107  x(2020)=316 -->
+<!-- y_hi(23000)=120−78×3000/6000=120−39=81    x(2022)=328 -->
+<!-- y_hi(24500)=120−78×4500/6000=120−58.5=62  x(2024)=340 -->
+<polyline points="316,107 328,81 340,62" fill="none" stroke="#c92a2a" stroke-width="2"/>
+<text x="342" y="62" font-size="8" fill="#c92a2a">T0.001%</text>
+
+<!-- Y axis label spanning both sections -->
+<text transform="rotate(-90,18,132)" x="18" y="132" text-anchor="middle" font-size="9" fill="#6c757d">Wealth (SEK)</text>
+
+<!-- X ticks -->
+<line x1="80"  y1="222" x2="80"  y2="226" stroke="#495057"/><text x="80"  y="235" text-anchor="middle" font-size="9" fill="#495057">1980</text>
+<line x1="139" y1="222" x2="139" y2="226" stroke="#495057"/><text x="139" y="235" text-anchor="middle" font-size="9" fill="#495057">1990</text>
+<line x1="199" y1="222" x2="199" y2="226" stroke="#495057"/><text x="199" y="235" text-anchor="middle" font-size="9" fill="#495057">2000</text>
+<line x1="258" y1="222" x2="258" y2="226" stroke="#495057"/><text x="258" y="235" text-anchor="middle" font-size="9" fill="#495057">2010</text>
+<line x1="340" y1="222" x2="340" y2="226" stroke="#495057"/><text x="340" y="235" text-anchor="middle" font-size="9" fill="#495057">2024</text>
+<text x="210" y="248" text-anchor="middle" font-size="9" fill="#6c757d">Year</text>
+</svg>

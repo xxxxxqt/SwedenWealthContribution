@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="255" font-family="Arial,Helvetica,sans-serif">
+<rect width="440" height="255" fill="#fff" rx="5" stroke="#dee2e6" stroke-width="1"/>
+<text x="220" y="18" text-anchor="middle" font-size="11" font-weight="bold" fill="#212529">Fig 1 — Linear Scale, Full Range</text>
+<text x="220" y="30" text-anchor="middle" font-size="9" fill="#6c757d">Y axis: linear  −700K to 24.5B  (wealth per person, SEK)</text>
+
+<!-- chart area x=[80,340] y=[42,222] -->
+<!-- y(v)=222−180×(v+0.7)/24500.7  (v in M SEK) -->
+<!-- y(0)≈222  y(5B)=185  y(10B)=148  y(15B)=111  y(20B)=74  y(24.5B)=42 -->
+
+<line x1="80" y1="185" x2="340" y2="185" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="148" x2="340" y2="148" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="111" x2="340" y2="111" stroke="#f1f3f5" stroke-width="1"/>
+<line x1="80" y1="74"  x2="340" y2="74"  stroke="#f1f3f5" stroke-width="1"/>
+
+<line x1="80" y1="42" x2="80" y2="222" stroke="#495057" stroke-width="1.5"/>
+<line x1="80" y1="222" x2="340" y2="222" stroke="#495057" stroke-width="1.5"/>
+
+<line x1="77" y1="222" x2="80" y2="222" stroke="#495057"/><text x="74" y="225" text-anchor="end" font-size="9" fill="#495057">0</text>
+<line x1="77" y1="185" x2="80" y2="185" stroke="#495057"/><text x="74" y="188" text-anchor="end" font-size="9" fill="#495057">5B</text>
+<line x1="77" y1="148" x2="80" y2="148" stroke="#495057"/><text x="74" y="151" text-anchor="end" font-size="9" fill="#495057">10B</text>
+<line x1="77" y1="111" x2="80" y2="111" stroke="#495057"/><text x="74" y="114" text-anchor="end" font-size="9" fill="#495057">15B</text>
+<line x1="77" y1="74"  x2="80" y2="74"  stroke="#495057"/><text x="74" y="77"  text-anchor="end" font-size="9" fill="#495057">20B</text>
+<line x1="77" y1="42"  x2="80" y2="42"  stroke="#495057"/><text x="74" y="45"  text-anchor="end" font-size="9" fill="#495057">24.5B</text>
+<text transform="rotate(-90,18,132)" x="18" y="132" text-anchor="middle" font-size="9" fill="#6c757d">Wealth (SEK)</text>
+
+<line x1="80"  y1="222" x2="80"  y2="226" stroke="#495057"/><text x="80"  y="235" text-anchor="middle" font-size="9" fill="#495057">1980</text>
+<line x1="139" y1="222" x2="139" y2="226" stroke="#495057"/><text x="139" y="235" text-anchor="middle" font-size="9" fill="#495057">1990</text>
+<line x1="199" y1="222" x2="199" y2="226" stroke="#495057"/><text x="199" y="235" text-anchor="middle" font-size="9" fill="#495057">2000</text>
+<line x1="258" y1="222" x2="258" y2="226" stroke="#495057"/><text x="258" y="235" text-anchor="middle" font-size="9" fill="#495057">2010</text>
+<line x1="340" y1="222" x2="340" y2="226" stroke="#495057"/><text x="340" y="235" text-anchor="middle" font-size="9" fill="#495057">2024</text>
+<text x="210" y="248" text-anchor="middle" font-size="9" fill="#6c757d">Year</text>
+
+<!-- Bottom 50% and Top 10%: values negligible vs 24.5B → compressed to y≈222 -->
+<polyline points="80,222 139,222 199,222 258,222 340,222" fill="none" stroke="#4dabf7" stroke-width="1.5" stroke-dasharray="3 2"/>
+<text x="342" y="220" font-size="8" fill="#4dabf7">B50%</text>
+<polyline points="80,222 139,222 199,222 258,222 340,222" fill="none" stroke="#ffa94d" stroke-width="1.5" stroke-dasharray="5 2" opacity="0.7"/>
+<text x="342" y="213" font-size="8" fill="#ffa94d">T10%</text>
+
+<!-- Top 0.001%: 800→1000→4000→12000→24500 M -->
+<polyline points="80,216 139,215 199,193 258,134 340,42" fill="none" stroke="#c92a2a" stroke-width="2"/>
+<text x="342" y="44" font-size="8" fill="#c92a2a">T0.001%</text>
+
+<text x="185" y="208" font-size="8" fill="#868e96">B50% and T10%</text>
+<text x="185" y="218" font-size="8" fill="#868e96">collapsed to baseline</text>
+<line x1="175" y1="212" x2="165" y2="222" stroke="#868e96" stroke-width="0.8"/>
+</svg>
