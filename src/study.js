@@ -16,6 +16,9 @@
 const STUDY_VERSION = "5.0";
 const STORAGE_KEY   = "wealth-study-data-v5";
 
+// Paste your OneDrive file-request URL here after creating it in OneDrive
+const ONEDRIVE_REQUEST_URL = "";
+
 /* ══════════════════════════════════════════════════════════════
    STEP DEFINITIONS
 ══════════════════════════════════════════════════════════════ */
@@ -71,11 +74,10 @@ const C1_T1 = {
 };
 
 const C1_T2 = {
-  id: "c1_t2", type: "task_insight",
+  id: "c1_t2", type: "task",
   phase: "Condition 1 — Task 2 of 3", questionType: "Pattern recognition",
   vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020" },
   taskText: "The same 2020 wealth data is now displayed as a <strong>TABLE</strong>. Read through the values and reflect on both this table and the bar chart from Task 1.",
-  openText: "Describe what patterns you see in the wealth distribution. What stands out most?",
   questionText: "Comparing the TABLE (now) and the BAR CHART (Task 1) — which better communicates the degree of wealth inequality?",
   options: [
     { label: "The TABLE — exact numbers make the differences obvious",                       value: "a" },
@@ -124,11 +126,10 @@ const C2_T1 = {
 };
 
 const C2_T2 = {
-  id: "c2_t2", type: "task_insight",
+  id: "c2_t2", type: "task",
   phase: "Condition 2 — Task 2 of 3", questionType: "Pattern recognition",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "break" },
   taskText: "The same data now uses a <strong>SCALE BREAK</strong> (zig-zag symbol on the Y-axis). The break skips a range of values so both the small lower-group bars and the extreme Top 0.001% bar are visible.",
-  openText: "Describe what patterns you see in this scale break chart. What does the break help you observe that the linear scale hid?",
   questionText: "Comparing the LINEAR scale (Task 1) and the SCALE BREAK (this chart) — which better shows the inequality between groups?",
   options: [
     { label: "Linear scale — a single consistent axis is easier to interpret",                          value: "a" },
@@ -179,11 +180,10 @@ const C3_T1 = {
 };
 
 const C3_T2 = {
-  id: "c3_t2", type: "task_insight",
+  id: "c3_t2", type: "task",
   phase: "Condition 3 — Task 2 of 3", questionType: "Pattern recognition",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "with", years: "2020", yScale: "linear-zoom" },
   taskText: "The same data now has <strong>population-size encoding</strong>. Bar WIDTH is proportional to the group's share of Sweden's population — a wider bar means a larger group. Notice how bar widths change, especially for the extreme top groups.",
-  openText: "Describe what patterns you see. What does combining bar HEIGHT (wealth) and bar WIDTH (population share) reveal about wealth concentration?",
   questionText: "Comparing the STANDARD chart (Task 1) and this POPULATION-ENCODED chart — which better communicates the true concentration of wealth?",
   options: [
     { label: "Standard chart — equal widths make heights easier to compare",                                                         value: "a" },
@@ -305,7 +305,7 @@ function persist() {
    SUMMARY
 ══════════════════════════════════════════════════════════════ */
 function buildSummary() {
-  return STEPS.filter(s => ["task","task_insight","task_likert"].includes(s.type)).map(t => {
+  return STEPS.filter(s => ["task","task_likert"].includes(s.type)).map(t => {
     const ans = state.answers[t.id] || {};
     const base = { id: t.id, phase: t.phase, type: t.questionType };
     if (!Object.keys(ans).length) return { ...base, answered: false };
@@ -316,13 +316,6 @@ function buildSummary() {
         answer: t.questions.map(q => `${q.id}:${ans[q.id]??'—'}`).join(", "),
         correct: null,
         totalSec: timeFmt(ans.totalMs), exploreSec: "—", answerSec: "—" };
-    }
-    if (t.type === "task_insight") {
-      const opt = (t.options||[]).find(o=>o.value===ans.value)?.label ?? ans.value ?? "—";
-      return { ...base, answered: true,
-        answer: opt, openAnswer: ans.openText ? ans.openText.slice(0,80)+"…" : "—",
-        correct: t.correct != null ? ans.value === t.correct : null,
-        totalSec: timeFmt(ans.totalMs), exploreSec: timeFmt(ans.exploreMs), answerSec: timeFmt(ans.answerMs) };
     }
     const opt = (t.options||[]).find(o=>o.value===ans.value)?.label ?? ans.value ?? "—";
     return { ...base, answered: true, answer: opt,
@@ -353,7 +346,7 @@ function render() {
   const overlay    = document.getElementById("study-overlay");
   const panel      = document.getElementById("study-panel");
   const taskBanner = document.getElementById("study-task-banner");
-  const isTask = ["task","task_insight","task_likert"].includes(step.type);
+  const isTask = ["task","task_likert"].includes(step.type);
   if (isTask) {
     overlay.classList.add("hidden");
     taskBanner.classList.remove("hidden");
@@ -432,7 +425,7 @@ function renderTaskBanner(step, banner) {
 
 function buildTaskHTML(step) {
   const ans   = state.answers[step.id] || {};
-  const timer = `<span class="task-timer-inline" id="task-timer-label">⏱ 0 s</span>`;
+  const timer = `<span id="task-timer-label" style="display:none"></span>`;
 
   if (taskPhase === "description") {
     return `<div class="task-banner-inner">
@@ -461,35 +454,6 @@ function buildTaskHTML(step) {
             <input type="radio" name="tq" value="${o.value}" ${saved===o.value?"checked":""}/>
             ${o.label}
           </label>`).join("")}
-      </div>
-      <div class="task-banner-nav">
-        <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
-        <button class="study-btn primary" id="task-submit" ${saved?"":"disabled"}>Submit →</button>
-      </div>
-    </div>`;
-  }
-
-  /* Insight: open-ended textarea + comparison MCQ side by side */
-  if (step.type === "task_insight") {
-    const saved = ans.value;
-    return `<div class="task-banner-inner">
-      <button class="study-close-btn" id="task-close-btn">✕</button>
-      <div class="task-phase-tag">${step.phase} — ${step.questionType} ${timer}</div>
-      <div class="task-insight-split">
-        <div class="task-insight-open">
-          <p class="task-question"><strong>Open-ended</strong><br>${step.openText}</p>
-          <textarea id="task-open-ta" placeholder="Describe your observations…" rows="4">${ans.openText||""}</textarea>
-        </div>
-        <div class="task-insight-mcq">
-          <p class="task-question"><strong>Multiple choice</strong><br>${step.questionText}</p>
-          <div class="task-options-col">
-            ${step.options.map(o=>`
-              <label class="task-option ${saved===o.value?"selected":""}">
-                <input type="radio" name="tq" value="${o.value}" ${saved===o.value?"checked":""}/>
-                ${o.label}
-              </label>`).join("")}
-          </div>
-        </div>
       </div>
       <div class="task-banner-nav">
         <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
@@ -543,7 +507,7 @@ function wireTask(step, banner) {
     banner.innerHTML = buildTaskHTML(step);
     wireTask(step, banner);
   });
-  if (step.type === "task" || step.type === "task_insight") {
+  if (step.type === "task") {
     banner.querySelectorAll(".task-option").forEach(lbl => {
       lbl.addEventListener("click", () => {
         banner.querySelectorAll(".task-option").forEach(l => l.classList.remove("selected"));
@@ -553,10 +517,6 @@ function wireTask(step, banner) {
         if (btn) btn.disabled = false;
       });
     });
-  }
-  if (step.type === "task_insight") {
-    const ta = banner.querySelector("#task-open-ta");
-    ta?.addEventListener("input", () => saveSubAnswer(step.id, "openText", ta.value));
   }
   if (step.type === "task_likert") {
     step.questions.forEach(q => {
@@ -597,11 +557,10 @@ function renderComplete(step, panel) {
     if (!r.answered) return `<tr><td>${r.phase||r.id}</td><td>${r.type}</td><td colspan="3"><em>—</em></td></tr>`;
     const mark  = r.correct===true?"✓":r.correct===false?"✗":"—";
     const style = r.correct===true?"color:#276749;font-weight:700":r.correct===false?"color:#c53030;font-weight:700":"";
-    const open  = r.openAnswer?`<br><em style="font-size:11px;color:#718096">${r.openAnswer}</em>`:"";
     return `<tr>
       <td style="font-size:11px">${(r.phase||r.id).split("—").pop().trim()}</td>
       <td style="font-size:11px;color:#718096">${r.type}</td>
-      <td>${r.answer}${open}</td>
+      <td>${r.answer}</td>
       <td style="${style}">${mark}</td>
       <td style="font-size:11px">${r.exploreSec} / ${r.answerSec}</td>
     </tr>`;
@@ -616,8 +575,27 @@ function renderComplete(step, panel) {
         <tbody>${rows}</tbody>
       </table>
     </div>
-    <div class="study-nav centered">
-      <button class="study-btn primary large" id="study-download">⬇ Download data (JSON)</button>
+    <div class="study-complete-steps">
+      <div class="complete-step">
+        <span class="complete-step-num">1</span>
+        <div>
+          <strong>Download your data</strong>
+          <p>Save the JSON file to your computer.</p>
+          <button class="study-btn primary" id="study-download">⬇ Download data (JSON)</button>
+        </div>
+      </div>
+      <div class="complete-step">
+        <span class="complete-step-num">2</span>
+        <div>
+          <strong>Upload to researcher</strong>
+          <p>Click the button below to open the upload folder, then drag your JSON file in.</p>
+          ${ONEDRIVE_REQUEST_URL
+            ? `<a class="study-btn primary" href="${ONEDRIVE_REQUEST_URL}" target="_blank" rel="noopener">⬆ Upload via OneDrive</a>`
+            : `<p class="upload-note">Upload link not configured yet — please send the JSON file directly to the researcher.</p>`}
+        </div>
+      </div>
+    </div>
+    <div class="study-nav centered" style="margin-top:16px">
       <button class="study-btn secondary" id="study-close-complete">Close</button>
     </div>`;
   panel.querySelector("#study-download").addEventListener("click", downloadData);
@@ -782,6 +760,13 @@ function injectStudyCSS() {
 .likert-cell input{position:absolute;opacity:0;pointer-events:none}
 .likert-cell span{font-size:12px;color:#2d3748;text-align:center}
 .task-banner-nav{display:flex;gap:10px;justify-content:flex-end}
+.study-complete-steps{display:flex;flex-direction:column;gap:16px;margin:20px 0}
+.complete-step{display:flex;gap:14px;align-items:flex-start}
+.complete-step-num{background:#2b6cb0;color:#fff;border-radius:50%;width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;margin-top:2px}
+.complete-step strong{display:block;font-size:14px;color:#1a202c;margin-bottom:4px}
+.complete-step p{margin:0 0 8px;font-size:13px;color:#5f6368}
+.upload-note{color:#c53030!important;font-style:italic}
 .study-summary{margin:16px 0;overflow-x:auto}
 .summary-table{width:100%;border-collapse:collapse;font-size:12px}
 .summary-table th,.summary-table td{text-align:left;padding:6px 9px;border-bottom:1px solid #e2e8f0}
