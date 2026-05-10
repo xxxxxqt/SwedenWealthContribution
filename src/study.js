@@ -664,14 +664,11 @@ function renderComplete(step, panel) {
   const summary = buildSummary();
   const condLabel = {1:"Table vs. Visual (C1)",2:"Y-axis Scales (C2)",3:"Population Encoding (C3)"};
   const rows = summary.map(r => {
-    if (!r.answered) return `<tr><td>${r.phase||r.id}</td><td>${r.type}</td><td colspan="3"><em>—</em></td></tr>`;
-    const mark  = r.correct===true?"✓":r.correct===false?"✗":"—";
-    const style = r.correct===true?"color:#276749;font-weight:700":r.correct===false?"color:#c53030;font-weight:700":"";
+    if (!r.answered) return `<tr><td>${r.phase||r.id}</td><td>${r.type}</td><td colspan="2"><em>—</em></td></tr>`;
     return `<tr>
       <td style="font-size:11px">${(r.phase||r.id).split("—").pop().trim()}</td>
       <td style="font-size:11px;color:#718096">${r.type}</td>
       <td>${r.answer}</td>
-      <td style="${style}">${mark}</td>
       <td style="font-size:11px">${r.exploreSec} / ${r.answerSec}</td>
     </tr>`;
   }).join("");
@@ -681,7 +678,7 @@ function renderComplete(step, panel) {
     <div class="study-body">${step.content}</div>
     <div class="study-summary">
       <table class="summary-table">
-        <thead><tr><th>Task</th><th>Type</th><th>Answer</th><th>✓?</th><th>Explore / Answer</th></tr></thead>
+        <thead><tr><th>Task</th><th>Type</th><th>Answer</th><th>Explore / Answer</th></tr></thead>
         <tbody>${rows}</tbody>
       </table>
     </div>
