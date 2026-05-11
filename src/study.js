@@ -188,60 +188,6 @@ const C2_T3 = {
   ],
 };
 
-/* ── CONDITION 3: Population encoding ───────────────────────── */
-const C3_INTRO = {
-  id: "c3_intro", type: "info",
-  title: "Condition 3 — Population-Size Encoding",
-  content: `
-    <p>In this condition you will compare bar charts <strong>without</strong> and <strong>with</strong> population-size encoding.</p>
-    <p><strong>Without encoding:</strong> All bars are the same width — only height encodes information.<br>
-    <strong>With encoding:</strong> Bar width is proportional to the group's share of Sweden's total population.</p>
-    <p>You will answer three questions about what each version reveals about wealth concentration.</p>`,
-  nextLabel: "Start Task 1 →",
-};
-
-const C3_T1 = {
-  id: "c3_t1", type: "task",
-  phase: "Condition 3 — Task 1 of 3", questionType: "Effectiveness",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
-  taskText: "Standard bar chart <strong>WITHOUT population-size encoding</strong>. All bars have the same width — only bar HEIGHT encodes average wealth per person.",
-  questionText: "Looking at this standard chart, how would you characterize the scale of wealth inequality between the groups?",
-  options: [
-    { label: "The gap is modest — Top 0.001% is roughly 10× wealthier than the lower groups",       value: "a" },
-    { label: "The gap is noticeable — roughly 100× difference between top and bottom groups",         value: "b" },
-    { label: "The gap is extreme — Top 0.001% is thousands of times wealthier than most groups",      value: "c" },
-    { label: "All groups appear roughly similar in wealth — no strong inequality is visible",          value: "d" },
-  ],
-  correct: "c",
-};
-
-const C3_T2 = {
-  id: "c3_t2", type: "task",
-  phase: "Condition 3 — Task 2 of 3", questionType: "Pattern recognition",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "with", years: "2020", yScale: "linear-zoom" },
-  taskText: "The same data now has <strong>population-size encoding</strong>. Bar WIDTH is proportional to the group's share of Sweden's population — a wider bar means a larger group. Notice how bar widths change, especially for the extreme top groups.",
-  questionText: "Comparing the STANDARD chart (Task 1) and this POPULATION-ENCODED chart — which better communicates the true concentration of wealth?",
-  options: [
-    { label: "Standard chart — equal widths make heights easier to compare",                                                         value: "a" },
-    { label: "Population-encoded chart — seeing how tiny the top group's population share is makes the inequality far more striking", value: "b" },
-    { label: "Both are equally effective",                                                                                            value: "c" },
-    { label: "The encoding adds confusion rather than insight",                                                                      value: "d" },
-  ],
-  correct: "b",
-};
-
-const C3_T3 = {
-  id: "c3_t3", type: "task_likert",
-  phase: "Condition 3 — Task 3 of 3", questionType: "Subjective Rating (−5 to +5)",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "with", years: "2020", yScale: "linear-zoom" },
-  taskText: "Rate the <strong>population-encoded chart</strong> you are currently viewing.",
-  questions: [
-    { id: "l1", text: "This visualization is easy to understand",                    lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "l2", text: "The information is clearly presented",                         lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "l3", text: "This visualization requires a lot of background knowledge",    lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-  ],
-};
-
 /* ── Dynamic STEPS ──────────────────────────────────────────── */
 let STEPS = [STEP_CONSENT, STEP_CONDITION_SELECT, STEP_COMPLETE];
 
@@ -250,7 +196,6 @@ function applyCondition(c) {
   const map = {
     1: [STEP_CONSENT, STEP_CONDITION_SELECT, C1_INTRO, C1_TABLE, C1_T1, C1_T2, C1_T3, STEP_COMPLETE],
     2: [STEP_CONSENT, STEP_CONDITION_SELECT, C2_INTRO, C2_T1, C2_T2, C2_T3, STEP_COMPLETE],
-    3: [STEP_CONSENT, STEP_CONDITION_SELECT, C3_INTRO, C3_T1, C3_T2, C3_T3, STEP_COMPLETE],
   };
   STEPS = map[c] || STEPS;
   state.currentStep = 2;
@@ -441,11 +386,6 @@ function renderConditionSelect(panel) {
         <span class="cond-num">C2</span>
         <strong>Bar Chart Y-axis Scales</strong>
         <p>Explore how linear and scale-break axes affect perception of extreme inequality.</p>
-      </button>
-      <button class="cond-card" data-c="3">
-        <span class="cond-num">C3</span>
-        <strong>Population-Size Encoding</strong>
-        <p>See what population-size bar encoding reveals that a standard chart hides.</p>
       </button>
     </div>
     <div class="study-nav">
