@@ -1,0 +1,373 @@
+══════════════════════════════════════════════════════════════════════════════
+  EVALUATION FRAMEWORK AND USER STUDY DESIGN
+  For thesis: Visualizing Wealth and Income Inequality in Sweden
+  Kairui Li — Linköping University
+══════════════════════════════════════════════════════════════════════════════
+
+
+─────────────────────────────────────────────────────────────────────────────
+1.  THEORETICAL BACKGROUND: EVALUATION IN INFORMATION VISUALIZATION
+─────────────────────────────────────────────────────────────────────────────
+
+1.1  The Role of Evaluation in Visualization Research
+─────────────────────────────────────────────────────
+
+Evaluation occupies a central position in information visualization research.
+Unlike purely aesthetic or technical design decisions, evaluation provides
+empirical evidence that a visualization fulfills its intended communicative
+purpose. Munzner's nested model of visualization design [1] identifies four
+layers at which a designer can make — and validate — decisions: the domain
+characterization, the abstraction of data and tasks, the visual encoding and
+interaction idiom, and the algorithmic implementation. Crucially, Munzner
+argues that each layer introduces its own category of threat, and that
+appropriate evaluation methods differ across layers. The outer domain layer
+is best validated through field studies and interviews; the algorithmic layer
+through benchmarks and complexity analysis; the middle layers — abstraction
+and idiom — through controlled experiments and qualitative user studies.
+
+This thesis addresses the idiom layer directly: it asks which visual
+representations (table, line chart, bar chart, waffle chart) and which axis
+scaling strategies (linear, scale break, logarithmic) most effectively
+communicate extreme wealth inequality. Evaluation at this layer therefore
+requires empirical methods that measure user comprehension, perceptual
+accuracy, and subjective experience.
+
+1.2  Evaluation Dimensions: Effectiveness, Efficiency, and Satisfaction
+──────────────────────────────────────────────────────────────────────────
+
+ISO 9241-11 [2] defines usability along three dimensions:
+
+  • Effectiveness — the accuracy and completeness with which users achieve
+    specified goals.
+  • Efficiency    — the resources (typically time) expended relative to the
+    accuracy and completeness achieved.
+  • Satisfaction  — the subjective comfort, and positive attitudes towards
+    using the product.
+
+In the context of visualization evaluation, effectiveness maps to perceptual
+accuracy in reading tasks (e.g., correctly identifying the wealthiest group,
+or correctly estimating the order of magnitude of a gap). Efficiency maps to
+task completion time, which is captured in this study through per-task
+timestamps. Satisfaction maps to the Likert-scale ratings collected after
+each visualization, covering ease of understanding and perceived clarity.
+
+This three-dimensional framework motivates the structure of the present study:
+each condition includes at least one objective accuracy task (effectiveness),
+timed responses (efficiency), and a set of rating questions (satisfaction).
+
+1.3  Task Taxonomies for Low-Level Evaluation
+──────────────────────────────────────────────
+
+Shneiderman's task-by-data taxonomy [3] distinguishes seven generic tasks
+applied across data types: overview, zoom, filter, details-on-demand, relate,
+history, and extract. At a finer granularity, Amar, Eagan, and Stasko [4]
+identified ten low-level analytic tasks, including Retrieve Value, Find
+Extremum, Determine Range, Find Anomalies, and Characterize Distribution.
+These categories inform the selection of questions in this study:
+
+  • Low-level / Find Extremum: "Which group has the highest average
+    wealth?" tests whether the representation makes the maximum immediately
+    apparent.
+  • Inequality perception / Determine Range: questions about the order of
+    magnitude of a gap test whether the scale of inequality is legible.
+  • Pattern recognition / Characterize Distribution: questions asking
+    participants to describe trends over time test higher-order understanding.
+
+By grounding task questions in established taxonomies, the study ensures that
+the measured outcomes reflect canonical visualization capabilities rather than
+arbitrary or idiosyncratic test items.
+
+1.4  Measuring Subjective Experience: Semantic Differential Scales
+───────────────────────────────────────────────────────────────────
+
+Likert scales [5] and semantic differential scales [6] are standard tools for
+capturing subjective responses in HCI research. A key distinction exists
+between unipolar scales (e.g., 1 = "Not at all easy" to 7 = "Very easy") and
+bipolar scales centered on zero (e.g., -5 = "Strongly disagree" to +5 =
+"Strongly agree"). The present study employs a bipolar −5 to +5 scale, which
+has been shown to reduce response-set bias and to communicate the neutral
+midpoint more naturally than a unipolar design [7].
+
+Three items are assessed per condition:
+  (i)   "This visualization is easy to understand"
+  (ii)  "The information is clearly presented"
+  (iii) "This visualization requires a lot of background knowledge"
+
+Items (i) and (ii) are positively valenced: higher scores indicate a more
+positive experience. Item (iii) is negatively valenced: high agreement
+signals perceived complexity, which should be inversely correlated with (i)
+and (ii) in a well-designed chart. The inclusion of a reverse-coded item
+provides a consistency check and enriches the subjective data.
+
+For Condition 1, an additional comparative Likert item is included per chart:
+"Compared to the TABLE, this [chart] shows wealth inequality more clearly."
+This item directly captures the within-subjects comparison that is the core
+research question of Condition 1.
+
+
+─────────────────────────────────────────────────────────────────────────────
+2.  THE REVISIT FRAMEWORK
+─────────────────────────────────────────────────────────────────────────────
+
+2.1  Background and Motivation
+───────────────────────────────
+
+Running controlled user studies for information visualization has historically
+required significant engineering effort: researchers needed to implement
+custom trial-management logic, randomization, response collection, and data
+export from scratch for each study. Yildiz et al. introduced reVISit [8] as a
+platform specifically designed to reduce this overhead. reVISit is a
+web-based framework that allows researchers to specify a study as a declarative
+configuration (JSON), deploy it on a server, and collect participant responses
+automatically. The framework handles participant flow, consent, practice
+trials, randomization, progress tracking, and data export.
+
+Although the present study is implemented as a self-contained JavaScript
+module embedded within the visualization tool itself (rather than as a
+hosted reVISit deployment), its design principles follow the reVISit
+philosophy: declarative step specification, separation of stimulus presentation
+from response collection, and structured data export in a researcher-readable
+format.
+
+2.2  Key Architectural Principles of reVISit
+─────────────────────────────────────────────
+
+reVISit is built around four architectural components [8]:
+
+  1. Study Configuration — A JSON-based specification declares all stimuli,
+     task sequences, question types, and randomization rules. This
+     configuration is the single source of truth for the study.
+
+  2. Stimulus Rendering — Stimuli can be React components, images, iframes,
+     or external URLs. In the context of visualization studies, the stimulus
+     is typically an interactive chart rendered in the browser.
+
+  3. Response Collection — Responses are captured through typed interfaces
+     (multiple choice, Likert scales, free text, sliders) and stored
+     alongside metadata (trial index, timestamp, participant ID).
+
+  4. Data Management — Completed sessions are persisted, exportable as JSON
+     or CSV, and can be reviewed through a researcher dashboard.
+
+The present study mirrors this architecture: the study module (study.js)
+serves as the configuration layer, the existing visualization tool (main.js)
+serves as the stimulus renderer, the task banner serves as the response
+collection interface, and the per-session JSON download serves as the data
+export mechanism.
+
+2.3  Study Design Patterns Supported by reVISit
+─────────────────────────────────────────────────
+
+reVISit explicitly supports the following design patterns, all of which are
+relevant to this study:
+
+  Between-subjects design: Participants are randomly assigned to one
+  condition. In this study participants self-select into Condition 1 or
+  Condition 2 from a selection screen, approximating a between-subjects
+  comparison of table-vs-visual and axis-scale manipulations.
+
+  Within-subjects design: Within Condition 1, each participant sees all
+  three visual representations (line chart, bar chart, waffle chart)
+  compared against the same table baseline, making it a fully
+  within-subjects comparison of chart types.
+
+  Counterbalancing: reVISit supports Latin-square counterbalancing to
+  control for order effects. In this implementation, charts are presented
+  in a fixed order (line → bar → waffle), which is a limitation
+  acknowledged in the study.
+
+  Provenance logging: reVISit records interaction logs (hover, zoom,
+  scroll) alongside explicit responses. In this study, interaction is
+  not logged beyond timestamps, but the explore-time / answer-time split
+  (recorded in the JSON output) partially captures engagement depth.
+
+2.4  Adaptations for This Study
+─────────────────────────────────
+
+Since the study is embedded in the visualization tool rather than hosted as a
+standalone reVISit deployment, several adaptations were made:
+
+  • The visualization controlled by the study is the same tool participants
+    will use, so the stimulus and the response interface coexist in the same
+    browser window. This mirrors a naturalistic usage scenario but may
+    reduce experimental control compared to a fully isolated deployment.
+
+  • Participants are not randomly assigned: they choose a condition.
+    This introduces self-selection bias, which should be noted as a
+    limitation in the final analysis.
+
+  • Data is stored in the participant's own browser (localStorage) and
+    downloaded as a JSON file, which the participant uploads to a shared
+    OneDrive folder. This design avoids the need for a server backend but
+    relies on participant compliance for data collection.
+
+  • Per reVISit conventions, timing data (total time on task, time from
+    description to question, time from question to submission) is recorded
+    invisibly without displaying a visible countdown to participants, to
+    avoid time pressure.
+
+
+─────────────────────────────────────────────────────────────────────────────
+3.  USER STUDY DESIGN IN THIS PROJECT
+─────────────────────────────────────────────────────────────────────────────
+
+3.1  Research Questions
+────────────────────────
+
+The user study is designed to answer the following research questions:
+
+  RQ1 (Representation effectiveness):
+    Does presenting wealth inequality as a visual chart (line chart, bar
+    chart, waffle chart) improve perceptual accuracy and perceived clarity
+    compared to a tabular presentation of the same data?
+
+  RQ2 (Axis scale effectiveness):
+    Among different Y-axis scaling strategies — linear, scale break — which
+    most effectively communicates the multi-order-of-magnitude inequality
+    present in Swedish wealth data?
+
+RQ1 is addressed by Condition 1 (C1). RQ2 is addressed by Condition 2 (C2).
+
+3.2  Participants and Recruitment
+───────────────────────────────────
+
+Participants are recruited through convenience sampling at Linköping
+University. Inclusion criteria: basic familiarity with bar charts or tables
+(no specialist training required). Exclusion criteria: none (the study is
+designed to be accessible to a general university audience). Each participant
+completes exactly one condition in a single session of approximately 8–12
+minutes.
+
+3.3  Study Conditions
+──────────────────────
+
+Condition 1 — Table vs. Visual Representations
+  Independent variable: Chart type (table | line chart | bar chart | waffle chart)
+  Design: Within-subjects — all participants see all four representations
+  Stimulus: Average net wealth per person (SEK), Sweden, 2020
+  Primary DV: MCQ accuracy (correct identification of maximum/inequality)
+  Secondary DV: Likert ratings (ease, clarity, comparative preference)
+
+Condition 2 — Bar Chart Y-axis Scales
+  Independent variable: Y-axis scale (linear | scale break)
+  Design: Within-subjects — participants see both scales sequentially
+  Stimulus: Average net wealth per person (SEK), Sweden, 2020
+  Primary DV: MCQ accuracy (correct characterisation of scale of inequality)
+  Secondary DV: Likert ratings (clarity, comprehension, mental effort)
+
+3.4  Task Structure
+────────────────────
+
+Each task follows a two-phase structure consistent with reVISit's
+trial architecture:
+
+  Phase 1 — Exploration:
+    The visualization is displayed in the main viewport. A task banner at
+    the bottom of the screen presents a description of the chart. The
+    participant is free to interact (zoom, pan) before proceeding.
+    Exploration time is recorded from the moment the task is first shown.
+
+  Phase 2 — Response:
+    The participant clicks "Show question" to enter the response phase.
+    For standard tasks: a multiple-choice question is displayed.
+    For combined tasks (C1 visual comparisons): a multiple-choice question
+    and two −5 to +5 Likert items are displayed simultaneously.
+    Answer time is recorded from the transition to the response phase.
+    The submit button is enabled only when all required fields are filled.
+
+3.5  Measurements
+──────────────────
+
+Objective measures:
+  • MCQ response accuracy (binary: correct / incorrect)
+  • Exploration time (milliseconds from step shown to "show question" click)
+  • Answer time (milliseconds from question shown to submit)
+  • Total task time (exploration + answer)
+
+Subjective measures:
+  • Likert −5 to +5 on: ease of understanding, clarity, background knowledge
+  • Likert −5 to +5 (Condition 1 only): comparative preference vs. table
+
+3.6  Procedure
+───────────────
+
+  1. Participant opens the tool in a browser.
+  2. Clicks "Start User Study" (bottom-right of the screen).
+  3. Reads participant information and gives consent by ticking a checkbox.
+  4. Selects a condition from the condition-selection screen (C1 or C2).
+  5. Reads the condition introduction (which explains what they will do).
+  6. Completes the tasks in sequence; between tasks the tool automatically
+     loads the appropriate visualization configuration (locked controls).
+  7. After the final task, a completion screen summarizes their responses
+     and provides two actions: (a) download the JSON data file, and
+     (b) upload the file to the researcher's OneDrive collection folder.
+  8. The participant uploads the JSON and closes the browser.
+
+3.7  Data Collection and Analysis Plan
+────────────────────────────────────────
+
+Each participant's session produces one JSON file containing:
+  • participantId (random 7-character string, no personal identifiers)
+  • condition (1 or 2)
+  • startTime, completedTime
+  • Per-task answers: MCQ value, Likert values, totalMs, exploreMs, answerMs
+  • correct (Boolean, researcher-side only — not shown to participant)
+
+Planned analysis:
+  • MCQ accuracy: chi-squared test or Fisher's exact test (per task, per
+    condition) to assess whether accuracy differs significantly from chance.
+  • Task time: Wilcoxon signed-rank test for paired within-subjects
+    comparisons (C1: table vs. each visual; C2: linear vs. scale break).
+  • Likert ratings: Mann-Whitney U or Wilcoxon tests (non-parametric, given
+    ordinal scale); effect sizes reported as rank-biserial correlation r.
+  • Comparative Likert (C1): one-sample Wilcoxon test against median = 0
+    (the neutral point) to detect systematic preference for visual over table.
+
+3.8  Limitations
+─────────────────
+
+  1. Self-selection bias — participants choose their condition, which may
+     correlate with prior familiarity or interest.
+  2. Fixed task order — chart type order (line → bar → waffle) and scale
+     order (linear → scale break) are not counterbalanced, introducing
+     potential learning and fatigue effects.
+  3. No interaction logging — interaction depth is approximated by task
+     time only; fine-grained hover or zoom events are not captured.
+  4. Small expected sample — due to convenience sampling, statistical power
+     may be limited; results should be treated as indicative.
+  5. Self-administered data upload — relies on participant compliance for
+     data delivery; drop-out at the upload step may bias the final dataset.
+
+
+─────────────────────────────────────────────────────────────────────────────
+REFERENCES
+─────────────────────────────────────────────────────────────────────────────
+
+[1]  T. Munzner, "A Nested Model for Visualization Design and Validation,"
+     IEEE Transactions on Visualization and Computer Graphics, vol. 15,
+     no. 6, pp. 921–928, 2009.
+
+[2]  ISO 9241-11, "Ergonomics of Human-System Interaction — Part 11: Usability:
+     Definitions and Concepts," International Organization for Standardization,
+     Geneva, Switzerland, 2018.
+
+[3]  B. Shneiderman, "The Eyes Have It: A Task by Data Type Taxonomy for
+     Information Visualizations," in Proc. IEEE Symposium on Visual Languages,
+     pp. 336–343, 1996.
+
+[4]  R. Amar, J. Eagan, and J. Stasko, "Low-Level Components of Analytic
+     Activity in Information Visualization," in Proc. IEEE Information
+     Visualization (InfoVis), pp. 111–117, 2005.
+
+[5]  R. Likert, "A Technique for the Measurement of Attitudes," Archives of
+     Psychology, vol. 22, no. 140, pp. 1–55, 1932.
+
+[6]  C. E. Osgood, G. J. Suci, and P. H. Tannenbaum, "The Measurement of
+     Meaning," University of Illinois Press, 1957.
+
+[7]  J. Sauro and J. R. Lewis, "Quantifying the User Experience: Practical
+     Statistics for User Research," 2nd ed., Morgan Kaufmann, 2016.
+
+[8]  B. Yildiz, R. Krueger, D. Moritz, and A. Lex, "reVISit: Towards a
+     Platform for Conducting and Managing User Studies for Visualization,"
+     in Proc. IEEE Visualization Conference (VIS), pp. 106–110, 2023.

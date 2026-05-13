@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="340" font-family="Arial,Helvetica,sans-serif">
+<rect width="680" height="340" fill="#fff" rx="6" stroke="#dee2e6" stroke-width="1"/>
+<text x="340" y="24" text-anchor="middle" font-size="13" font-weight="bold" fill="#212529">Fig. 2 — Two-Phase Task Structure (per task)</text>
+
+<!-- Phase 1 box -->
+<rect x="40" y="44" width="270" height="200" rx="8" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+<rect x="40" y="44" width="270" height="30" rx="8" fill="#2b6cb0"/>
+<rect x="40" y="64" width="270" height="10" fill="#2b6cb0"/>
+<text x="175" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">Phase 1 — Exploration</text>
+
+<text x="60" y="100" font-size="10.5" fill="#212529" font-weight="bold">What participants see:</text>
+<text x="60" y="118" font-size="10" fill="#495057">• Full visualization (main viewport)</text>
+<text x="60" y="134" font-size="10" fill="#495057">• Task description in bottom banner</text>
+<text x="60" y="150" font-size="10" fill="#495057">• Axis zoom slider (interactive)</text>
+<text x="60" y="166" font-size="10" fill="#495057">• Other controls locked / dimmed</text>
+
+<text x="60" y="190" font-size="10.5" fill="#212529" font-weight="bold">Timing:</text>
+<text x="60" y="207" font-size="10" fill="#495057">• exploreMs starts when task is shown</text>
+<text x="60" y="222" font-size="10" fill="#495057">• ends when "Show question" is clicked</text>
+
+<!-- arrow between phases -->
+<line x1="310" y1="144" x2="370" y2="144" stroke="#2b6cb0" stroke-width="2" stroke-dasharray="5 3"/>
+<text x="340" y="138" text-anchor="middle" font-size="9" fill="#2b6cb0">click</text>
+<polygon points="370,140 370,148 378,144" fill="#2b6cb0"/>
+
+<!-- Phase 2 box -->
+<rect x="378" y="44" width="270" height="200" rx="8" fill="#f8f9fa" stroke="#adb5bd" stroke-width="1.5"/>
+<rect x="378" y="44" width="270" height="30" rx="8" fill="#c2255c"/>
+<rect x="378" y="64" width="270" height="10" fill="#c2255c"/>
+<text x="513" y="64" text-anchor="middle" font-size="11" font-weight="bold" fill="#fff">Phase 2 — Response</text>
+
+<text x="396" y="100" font-size="10.5" fill="#212529" font-weight="bold">Standard task (MCQ):</text>
+<text x="396" y="116" font-size="10" fill="#495057">• Multiple-choice question (4 options)</text>
+<text x="396" y="132" font-size="10" fill="#495057">• Submit enabled on selection</text>
+
+<text x="396" y="154" font-size="10.5" fill="#212529" font-weight="bold">Combined task (C1 visual charts):</text>
+<text x="396" y="170" font-size="10" fill="#495057">• MCQ question (4 options)</text>
+<text x="396" y="186" font-size="10" fill="#495057">• 2 × Likert −5 to +5 rating</text>
+<text x="396" y="202" font-size="10" fill="#495057">• Submit only when all 3 answered</text>
+
+<text x="396" y="222" font-size="10" fill="#868e96" font-style="italic">• answerMs starts at phase transition</text>
+
+<!-- Submission arrow -->
+<line x1="340" y1="260" x2="340" y2="310" stroke="#2f9e44" stroke-width="2"/>
+<polygon points="336,308 344,308 340,316" fill="#2f9e44"/>
+
+<rect x="260" y="260" width="160" height="32" rx="6" fill="#ebfbee" stroke="#2f9e44" stroke-width="1.5"/>
+<text x="340" y="281" text-anchor="middle" font-size="11" font-weight="bold" fill="#2f9e44">Submit</text>
+
+<rect x="196" y="316" width="288" height="20" rx="4" fill="#fff3bf" stroke="#e67700" stroke-width="1"/>
+<text x="340" y="330" text-anchor="middle" font-size="9.5" fill="#e67700">Data saved: MCQ answer · Likert ratings · totalMs · exploreMs · answerMs</text>
+</svg>
