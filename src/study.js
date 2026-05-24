@@ -13,8 +13,8 @@
      T3  Likert (−5–+5) — ease · clarity · background knowledge
    ============================================================ */
 
-const STUDY_VERSION = "5.0";
-const STORAGE_KEY   = "wealth-study-data-v5";
+const STUDY_VERSION = "6.0";
+const STORAGE_KEY   = "wealth-study-data-v6";
 
 // Paste your OneDrive file-request URL here after creating it in OneDrive
 const ONEDRIVE_REQUEST_URL = "https://1drv.ms/f/c/b440acd6517e9d8a/IgAXJfxK03yxSKR_DAq3UjdmAbPCMZVRrbTZJiKHk7NYb7Q?e=LHCxco";
@@ -136,56 +136,101 @@ const C1_T3 = {
   ],
 };
 
-/* ── CONDITION 2: Y-axis scales ─────────────────────────────── */
+/* ── CONDITION 2: Y-axis scales (4 variants × 3 questions = 12) ─── */
 const C2_INTRO = {
   id: "c2_intro", type: "info",
   title: "Condition 2 — Bar Chart Y-axis Scales",
   content: `
-    <p>In this condition you will see the same 2020 wealth data displayed with <strong>two different Y-axis scales</strong>: a linear scale and a scale break.</p>
-    <p>You will answer three questions: one about what each scale reveals about inequality, one about patterns and which scale is more effective, and one rating.</p>`,
-  nextLabel: "Start Task 1 →",
+    <p>In this condition you will see the <strong>same 2020 Swedish wealth data</strong> displayed with four different Y-axis scales:</p>
+    <ol style="font-size:14px;line-height:1.8;padding-left:20px;margin:8px 0 12px">
+      <li><strong>Linear (full range)</strong> — equal spacing, full data range</li>
+      <li><strong>Logarithmic</strong> — each step represents a 10× increase</li>
+      <li><strong>Scale break (zig-zag)</strong> — axis jumps over the mid-range gap</li>
+      <li><strong>Linear with zoom window</strong> — range slider to explore the axis</li>
+    </ol>
+    <p>For each scale you will answer <strong>one value-reading question</strong> and rate the scale on <strong>two Likert items</strong>. A final question then asks about the overall magnitude of inequality.</p>`,
+  nextLabel: "Start Scale 1 →",
 };
 
-const C2_T1 = {
-  id: "c2_t1", type: "task",
-  phase: "Condition 2 — Task 1 of 3", questionType: "Effectiveness",
+/* Q1 options are identical across all four variants so accuracy is comparable */
+const C2_Q1_OPTIONS = [
+  { label: "Around 19 million SEK  (≈ 1.9 × 10⁷)",   value: "a" },
+  { label: "Around 190 million SEK (≈ 1.9 × 10⁸)",   value: "b" },
+  { label: "Around 19 billion SEK  (≈ 1.9 × 10¹⁰)",  value: "c" },
+  { label: "Around 190 billion SEK (≈ 1.9 × 10¹¹)",  value: "d" },
+];
+const C2_Q1_CORRECT = "c"; /* actual value ≈ 18.9 billion SEK */
+
+const C2_V1 = {
+  id: "c2_v1", type: "task_combined",
+  phase: "Condition 2 — Scale 1 of 4", questionType: "Linear (Full Range)",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear" },
-  taskText: "This bar chart uses a <strong>LINEAR Y-axis</strong> for 2020 wealth data. On a linear scale, equal distances represent equal amounts in SEK. Use the zoom slider to explore.",
-  questionText: "What does the LINEAR scale reveal about how the wealth is distributed across the six groups?",
-  options: [
-    { label: "All six groups are clearly distinguishable — differences are easy to compare",          value: "a" },
-    { label: "Most groups are visible with gradual steps, one outlier at the top",                     value: "b" },
-    { label: "The lower groups are nearly invisible — the Top 0.001% bar dominates so completely that other differences are hidden", value: "c" },
-    { label: "The chart shows roughly equal wealth across all groups",                                 value: "d" },
+  taskText: "This bar chart uses a <strong>LINEAR (full range) Y-axis</strong>. Equal vertical distances represent equal SEK amounts across the entire data range — from the most negative value to the highest. No break or zoom is applied.",
+  questionText: "Q1 — Value reading: Looking at this linear-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  options: C2_Q1_OPTIONS,
+  correct: C2_Q1_CORRECT,
+  likertQuestions: [
+    { id: "lq1", text: "This linear Y-axis makes the Top 0.001%'s extreme wealth clearly visible relative to the other groups",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                                lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
-  correct: "c",
 };
 
-const C2_T2 = {
-  id: "c2_t2", type: "task",
-  phase: "Condition 2 — Task 2 of 3", questionType: "Pattern recognition",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "break" },
-  taskText: "The same data now uses a <strong>SCALE BREAK</strong> (zig-zag symbol on the Y-axis). The break skips a range of values so both the small lower-group bars and the extreme Top 0.001% bar are visible.",
-  questionText: "Comparing the LINEAR scale (Task 1) and the SCALE BREAK (this chart) — which better shows the inequality between groups?",
-  options: [
-    { label: "Linear scale — a single consistent axis is easier to interpret",                          value: "a" },
-    { label: "Scale break — I can now see both fine differences among lower groups AND the extreme top", value: "b" },
-    { label: "Both are equally effective",                                                               value: "c" },
-    { label: "Neither — a logarithmic scale would be better for this data",                             value: "d" },
+const C2_V2 = {
+  id: "c2_v2", type: "task_combined",
+  phase: "Condition 2 — Scale 2 of 4", questionType: "Logarithmic",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "log" },
+  taskText: "This bar chart uses a <strong>LOGARITHMIC Y-axis</strong>. Each equal step on the axis represents a ×10 increase in wealth — not a fixed SEK amount. Groups with near-zero or negative wealth cannot be shown on a log scale.",
+  questionText: "Q1 — Value reading: Looking at this logarithmic-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  options: C2_Q1_OPTIONS,
+  correct: C2_Q1_CORRECT,
+  likertQuestions: [
+    { id: "lq1", text: "This logarithmic Y-axis makes wealth differences across all visible groups clearly comparable",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                       lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
-  correct: "b",
 };
 
-const C2_T3 = {
-  id: "c2_t3", type: "task_likert",
-  phase: "Condition 2 — Task 3 of 3", questionType: "Subjective Rating (−5 to +5)",
+const C2_V3 = {
+  id: "c2_v3", type: "task_combined",
+  phase: "Condition 2 — Scale 3 of 4", questionType: "Scale Break (Zig-zag)",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "break" },
-  taskText: "Rate the <strong>scale break chart</strong> you are currently viewing.",
-  questions: [
-    { id: "l1", text: "This visualization is easy to understand",                    lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "l2", text: "The information is clearly presented",                         lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "l3", text: "This visualization requires a lot of background knowledge",    lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+  taskText: "This bar chart uses a <strong>SCALE BREAK</strong> (the zig-zag symbol on the Y-axis). The axis skips a large range of values so that both the lower-group bars and the extreme Top 0.001% bar fit within the same chart.",
+  questionText: "Q1 — Value reading: Looking at this scale-break chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  options: C2_Q1_OPTIONS,
+  correct: C2_Q1_CORRECT,
+  likertQuestions: [
+    { id: "lq1", text: "The scale break makes it easy to compare both the lower groups and the extreme top group simultaneously", lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis (with its break) is easy to understand",                                                      lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
+};
+
+const C2_V4 = {
+  id: "c2_v4", type: "task_combined",
+  phase: "Condition 2 — Scale 4 of 4", questionType: "Linear with Zoom Window",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
+  taskText: "This bar chart uses a <strong>LINEAR Y-axis with a zoom window</strong>. The range slider (above the chart) controls which portion of the Y-axis is visible — zoom in to see lower groups in detail, or zoom out to reveal the full range including the Top 0.001%.",
+  questionText: "Q1 — Value reading: Using the zoom slider to explore, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  options: C2_Q1_OPTIONS,
+  correct: C2_Q1_CORRECT,
+  likertQuestions: [
+    { id: "lq1", text: "The zoom slider helps me understand the full scale of wealth inequality across all groups",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis approach (with the zoom slider) is easy to use",                               lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+  ],
+};
+
+/* Q2 — Magnitude comparison: shown once after all four scales, on zoom chart */
+const C2_COMPARE = {
+  id: "c2_compare", type: "task",
+  phase: "Condition 2 — Final Question", questionType: "Magnitude Comparison (Q2)",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
+  taskText: "Now that you have seen the same data through all four Y-axis scales, here is a final question. Use the zoom slider to explore the chart as needed. <em>Data: Top 0.001% ≈ 19 billion SEK per person; Middle 40% ≈ 3.5 million SEK per person (2020).</em>",
+  questionText: "Q2 — Magnitude comparison: Roughly how many times larger is the Top 0.001%'s average per-person wealth compared with the Middle 40%'s average per-person wealth in 2020?",
+  options: [
+    { label: "About 10 times larger",              value: "a" },
+    { label: "About 100 times larger",             value: "b" },
+    { label: "About 1,000 times larger",           value: "c" },
+    { label: "About 5,000 times larger or more",   value: "d" },
+  ],
+  correct: "d", /* actual ratio ≈ 18.9B / 3.47M ≈ 5,430× */
 };
 
 /* ── Dynamic STEPS ──────────────────────────────────────────── */
@@ -195,7 +240,7 @@ function applyCondition(c) {
   state.condition = c;
   const map = {
     1: [STEP_CONSENT, STEP_CONDITION_SELECT, C1_INTRO, C1_TABLE, C1_T1, C1_T2, C1_T3, STEP_COMPLETE],
-    2: [STEP_CONSENT, STEP_CONDITION_SELECT, C2_INTRO, C2_T1, C2_T2, C2_T3, STEP_COMPLETE],
+    2: [STEP_CONSENT, STEP_CONDITION_SELECT, C2_INTRO, C2_V1, C2_V2, C2_V3, C2_V4, C2_COMPARE, STEP_COMPLETE],
   };
   STEPS = map[c] || STEPS;
   state.currentStep = 2;
@@ -385,7 +430,7 @@ function renderConditionSelect(panel) {
       <button class="cond-card" data-c="2">
         <span class="cond-num">C2</span>
         <strong>Bar Chart Y-axis Scales</strong>
-        <p>Explore how linear and scale-break axes affect perception of extreme inequality.</p>
+        <p>Compare four Y-axis designs — linear, logarithmic, scale break, and zoom window — and how each reveals extreme wealth inequality.</p>
       </button>
     </div>
     <div class="study-nav">
@@ -602,7 +647,7 @@ function startTaskTimer(banner, t0) {
 /* ── Complete ────────────────────────────────────────────────── */
 function renderComplete(step, panel) {
   const summary = buildSummary();
-  const condLabel = {1:"Table vs. Visual (C1)",2:"Y-axis Scales (C2)",3:"Population Encoding (C3)"};
+  const condLabel = {1:"Table vs. Visual (C1)",2:"Y-axis Scales (C2)"};
   const rows = summary.map(r => {
     if (!r.answered) return `<tr><td>${r.phase||r.id}</td><td>${r.type}</td><td colspan="2"><em>—</em></td></tr>`;
     return `<tr>
