@@ -47,93 +47,153 @@ const STEP_COMPLETE = {
   content: `<p>Your responses and timing data are recorded below. Click <strong>Download</strong> to save a JSON file — please share it with the researcher.</p>`,
 };
 
-/* ── CONDITION 1: Table vs. Line / Bar / Waffle ─────────────── */
+/* ── CONDITION 1: Table vs. Line / Bar / Waffle ─────────────────────────────
+   Structure per docx section 1.1–1.2:
+     Table baseline (3 Qs: Q1+Q2 factual + Q3 Likert)
+     8 visual cells × 2 Qs (Q1 estimation + Q2 magnitude)
+     1 Q3 Likert per chart type (after all modes for that type)
+   Total: 3 + 16 + 3 = 22 questions across 13 task steps.
+─────────────────────────────────────────────────────────────────────────── */
 const C1_INTRO = {
   id: "c1_intro", type: "info",
   title: "Condition 1 — Table vs. Visual Representations",
   content: `
-    <p>In this condition you will compare a <strong>data table</strong> with three visual representations of the same wealth data: a <strong>line chart</strong>, a <strong>bar chart</strong>, and a <strong>waffle chart</strong>.</p>
-    <p><strong>First</strong> you will see the data as a TABLE — familiarise yourself with the numbers. Then for each visual chart you will answer:</p>
+    <p>You will first see the Swedish wealth data as a <strong>TABLE</strong>, then as three visual representations — <strong>line chart</strong>, <strong>bar chart</strong>, and <strong>waffle chart</strong> — each shown in different comparison modes.</p>
+    <p>For every step you will answer the <strong>same two factual questions</strong>:</p>
     <ul>
-      <li>One question about identifying inequality</li>
-      <li>Two rating questions comparing the chart with the table</li>
+      <li><strong>Q1 — Estimation:</strong> "What share of total wealth did the Top 10% hold in Sweden in 2024?"</li>
+      <li><strong>Q2 — Magnitude:</strong> "Roughly how many times larger is the Top 0.001%'s per-person wealth than the Bottom 50%'s in 2024?"</li>
     </ul>
-    <p>The axis zoom slider stays active throughout — feel free to explore before answering.</p>`,
+    <p>After all steps for each chart type you will give a short clarity rating (Q3).</p>`,
   nextLabel: "View the Table →",
 };
 
-// Baseline: participants see the TABLE first and answer a simple reading task
+/* ── Shared factual questions (same wording in every cell for comparability) */
+const C1_Q1 = {
+  text: "Q1 — Estimation: What share of total wealth did the Top 10% hold in Sweden in 2024?",
+  options: [
+    { label: "About 20% of all wealth",  value: "a" },
+    { label: "About 45% of all wealth",  value: "b" },
+    { label: "About 68% of all wealth",  value: "c" },
+    { label: "About 90% of all wealth",  value: "d" },
+  ],
+  correct: "c",  /* WID data: p90p100 share ≈ 68% in 2023, extrapolated 2024 */
+};
+
+const C1_Q2 = {
+  text: "Q2 — Magnitude: Roughly how many times larger is the Top 0.001%'s average per-person wealth than the Bottom 50%'s average per-person wealth in 2024?",
+  options: [
+    { label: "About 10 times larger",              value: "a" },
+    { label: "About 100 times larger",             value: "b" },
+    { label: "About 1,000 times larger",           value: "c" },
+    { label: "About 10,000 times larger or more",  value: "d" },
+  ],
+  correct: "d",  /* Top 0.001% ≈ 24.5 B SEK vs Bottom 50% ≈ −687 K SEK; |ratio| ≈ 35,000× */
+};
+
+/* Q3 Likert shared template (per chart type, not per cell) */
+const C1_Q3 = (chartName) => ([
+  { id: "lq1", text: `How clearly does the <strong>${chartName}</strong> convey the wealth inequality pattern?`,
+    lo: "−5 Not at all clear", hi: "Extremely clear +5" },
+]);
+
+/* ── Baseline: TABLE (Q1 + Q2 + Q3) ────────────────────────────── */
 const C1_TABLE = {
-  id: "c1_table", type: "task",
-  phase: "Condition 1 — Baseline", questionType: "Table reading",
-  vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020" },
-  taskText: "This <strong>TABLE</strong> shows average net wealth per person (SEK) for six population groups in Sweden in 2020. Read all values carefully — you will compare this table with visual charts in the next tasks.",
-  questionText: "According to the table, which group had the HIGHEST average net wealth per person in 2020?",
-  options: [
-    { label: "Bottom 50%",  value: "a" },
-    { label: "Top 10%",     value: "b" },
-    { label: "Top 0.01%",   value: "c" },
-    { label: "Top 0.001%",  value: "d" },
-  ],
-  correct: "d",
+  id: "c1_table", type: "task_2q",
+  phase: "Condition 1 — Baseline", questionType: "Table",
+  vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024" },
+  taskText: "This <strong>TABLE</strong> shows the average net wealth per person (SEK) for six population groups in Sweden in 2024. Read all values carefully before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_TABLE_RATE = {
+  id: "c1_table_rate", type: "task_likert",
+  phase: "Condition 1 — Baseline Rating", questionType: "Table — Clarity (Q3)",
+  vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024" },
+  taskText: "You are still viewing the <strong>TABLE</strong>. Please rate its clarity.",
+  questions: C1_Q3("TABLE"),
 };
 
-// task_combined: MCQ (low-level) + 2 Likert questions in one step
-const C1_T1 = {
-  id: "c1_t1", type: "task_combined",
-  phase: "Condition 1 — Task 1 of 3", questionType: "Line chart vs Table",
+/* ── Line chart cells (Juxtaposition + Superposition) + Q3 ──────── */
+const C1_LINE_JUX = {
+  id: "c1_line_jux", type: "task_2q",
+  phase: "Condition 1 — Line × Juxtaposition", questionType: "Line chart",
   vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
-  taskText: "This <strong>LINE CHART</strong> shows average wealth per person for each group from 1980 to 2024. Compare it with the TABLE you just saw.",
-  questionText: "Looking at the line chart, which group shows the most dramatic INCREASE in wealth over time?",
-  options: [
-    { label: "Bottom 50% — it grew the fastest from 1980",   value: "a" },
-    { label: "Top 10% — steady consistent growth",            value: "b" },
-    { label: "Top 1% — the steepest rise overall",            value: "c" },
-    { label: "Top 0.001% — an extreme spike far above others", value: "d" },
-  ],
-  correct: "d",
-  likertQuestions: [
-    { id: "lq1", text: "This LINE CHART is easy to understand",                                              lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "Compared to the TABLE, this LINE CHART shows wealth inequality more clearly",        lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-  ],
+  taskText: "This <strong>LINE CHART</strong> shows average per-person wealth for each group from 1980 to 2024, displayed as <strong>separate panels</strong> (juxtaposition). Focus on the 2024 values before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_LINE_SUPER = {
+  id: "c1_line_super", type: "task_2q",
+  phase: "Condition 1 — Line × Superposition", questionType: "Line chart",
+  vizConfig: { representation: "line", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
+  taskText: "The same data is now shown as a <strong>LINE CHART</strong> with all groups <strong>overlaid</strong> on one chart (superposition). Focus on the 2024 values before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_LINE_RATE = {
+  id: "c1_line_rate", type: "task_likert",
+  phase: "Condition 1 — Line Chart Rating", questionType: "Line chart — Clarity (Q3)",
+  vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
+  taskText: "You have now seen the <strong>LINE CHART</strong> in two comparison modes. Please rate overall clarity.",
+  questions: C1_Q3("LINE CHART"),
 };
 
-const C1_T2 = {
-  id: "c1_t2", type: "task_combined",
-  phase: "Condition 1 — Task 2 of 3", questionType: "Bar chart vs Table",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
-  taskText: "This <strong>BAR CHART</strong> shows average wealth per person for each group in 2020. Compare it with the TABLE from the baseline step.",
-  questionText: "Looking at the bar chart, how would you describe the scale of wealth inequality across the six groups?",
-  options: [
-    { label: "Differences are modest — groups are within a factor of 10 of each other",           value: "a" },
-    { label: "Differences are noticeable — roughly 100× between top and bottom",                   value: "b" },
-    { label: "Differences are extreme — Top 0.001% towers so high that all others are invisible",  value: "c" },
-    { label: "All groups appear roughly equal in wealth",                                           value: "d" },
-  ],
-  correct: "c",
-  likertQuestions: [
-    { id: "lq1", text: "This BAR CHART is easy to understand",                                           lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "Compared to the TABLE, this BAR CHART shows wealth inequality more clearly",     lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-  ],
+/* ── Bar chart cells (Juxtaposition + Superposition + Animation) + Q3 */
+const C1_BAR_JUX = {
+  id: "c1_bar_jux", type: "task_2q",
+  phase: "Condition 1 — Bar × Juxtaposition", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
+  taskText: "This <strong>BAR CHART</strong> shows average per-person wealth for each group in 2024, with separate bars shown <strong>side by side</strong> (juxtaposition). Use the zoom slider to explore before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_BAR_SUPER = {
+  id: "c1_bar_super", type: "task_2q",
+  phase: "Condition 1 — Bar × Superposition", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
+  taskText: "The same data is now shown as a <strong>BAR CHART</strong> with all groups <strong>overlaid</strong> on one axis (superposition). Use the zoom slider to explore before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_BAR_ANIM = {
+  id: "c1_bar_anim", type: "task_2q",
+  phase: "Condition 1 — Bar × Animation", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "animation", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
+  taskText: "The same data is now shown as an <strong>ANIMATED BAR CHART</strong> that steps through years 1980 → 2024. Let it run to 2024 (or drag the slider) before answering.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_BAR_RATE = {
+  id: "c1_bar_rate", type: "task_likert",
+  phase: "Condition 1 — Bar Chart Rating", questionType: "Bar chart — Clarity (Q3)",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
+  taskText: "You have now seen the <strong>BAR CHART</strong> in three comparison modes. Please rate overall clarity.",
+  questions: C1_Q3("BAR CHART"),
 };
 
-const C1_T3 = {
-  id: "c1_t3", type: "task_combined",
-  phase: "Condition 1 — Task 3 of 3", questionType: "Waffle chart vs Table",
+/* ── Waffle chart cells (Juxtaposition + Superposition + Animation) + Q3 */
+const C1_WAFFLE_JUX = {
+  id: "c1_waffle_jux", type: "task_2q",
+  phase: "Condition 1 — Waffle × Juxtaposition", questionType: "Waffle chart",
   vizConfig: { representation: "waffle", comparison: "juxtaposition", metric: "income", popEncoding: "without", years: "2020" },
-  taskText: "This <strong>WAFFLE CHART</strong> shows each group's share of Sweden's total income in 2020. Each cell = 1% of total income. Compare it with the TABLE from the baseline step.",
-  questionText: "What does the waffle chart reveal about income distribution in Sweden?",
-  options: [
-    { label: "Income is distributed roughly equally — all groups fill a similar number of cells",                          value: "a" },
-    { label: "The top groups control a disproportionately large income share despite being tiny in population",            value: "b" },
-    { label: "The Bottom 50% controls most of Sweden's total income",                                                      value: "c" },
-    { label: "The waffle chart makes it impossible to identify any inequality",                                            value: "d" },
-  ],
-  correct: "b",
-  likertQuestions: [
-    { id: "lq1", text: "This WAFFLE CHART is easy to understand",                                              lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "Compared to the TABLE, this WAFFLE CHART shows income inequality more clearly",       lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-  ],
+  taskText: "This <strong>WAFFLE CHART</strong> shows each group's <em>share</em> of Sweden's total income in 2020 (each cell = 1%). Each group has its own panel (<strong>juxtaposition</strong>). Answer both questions about <em>wealth</em> inequality based on all charts you have seen so far.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_WAFFLE_SUPER = {
+  id: "c1_waffle_super", type: "task_2q",
+  phase: "Condition 1 — Waffle × Superposition", questionType: "Waffle chart",
+  vizConfig: { representation: "waffle", comparison: "superposition", metric: "income", popEncoding: "without", years: "2020" },
+  taskText: "The same income data is now shown as a <strong>WAFFLE CHART</strong> with all groups <strong>combined</strong> in one 10×10 grid (superposition). Answer both questions about <em>wealth</em> inequality.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_WAFFLE_ANIM = {
+  id: "c1_waffle_anim", type: "task_2q",
+  phase: "Condition 1 — Waffle × Animation", questionType: "Waffle chart",
+  vizConfig: { representation: "waffle", comparison: "animation", metric: "income", popEncoding: "without", years: "1980,1990,2000,2010,2020" },
+  taskText: "The same income data is now shown as an <strong>ANIMATED WAFFLE CHART</strong> stepping through years. Answer both questions about <em>wealth</em> inequality based on all evidence you have accumulated.",
+  q1: C1_Q1, q2: C1_Q2,
+};
+const C1_WAFFLE_RATE = {
+  id: "c1_waffle_rate", type: "task_likert",
+  phase: "Condition 1 — Waffle Chart Rating", questionType: "Waffle chart — Clarity (Q3)",
+  vizConfig: { representation: "waffle", comparison: "juxtaposition", metric: "income", popEncoding: "without", years: "2020" },
+  taskText: "You have now seen the <strong>WAFFLE CHART</strong> in three comparison modes. Please rate overall clarity.",
+  questions: C1_Q3("WAFFLE CHART"),
 };
 
 /* ── CONDITION 2: Y-axis scales (4 variants × 3 questions = 12) ─── */
@@ -239,7 +299,14 @@ let STEPS = [STEP_CONSENT, STEP_CONDITION_SELECT, STEP_COMPLETE];
 function applyCondition(c) {
   state.condition = c;
   const map = {
-    1: [STEP_CONSENT, STEP_CONDITION_SELECT, C1_INTRO, C1_TABLE, C1_T1, C1_T2, C1_T3, STEP_COMPLETE],
+    1: [
+      STEP_CONSENT, STEP_CONDITION_SELECT, C1_INTRO,
+      /* Table baseline */  C1_TABLE, C1_TABLE_RATE,
+      /* Line cells */      C1_LINE_JUX, C1_LINE_SUPER, C1_LINE_RATE,
+      /* Bar cells */       C1_BAR_JUX, C1_BAR_SUPER, C1_BAR_ANIM, C1_BAR_RATE,
+      /* Waffle cells */    C1_WAFFLE_JUX, C1_WAFFLE_SUPER, C1_WAFFLE_ANIM, C1_WAFFLE_RATE,
+      STEP_COMPLETE,
+    ],
     2: [STEP_CONSENT, STEP_CONDITION_SELECT, C2_INTRO, C2_V1, C2_V2, C2_V3, C2_V4, C2_COMPARE, STEP_COMPLETE],
   };
   STEPS = map[c] || STEPS;
@@ -331,7 +398,7 @@ function persist() {
    SUMMARY
 ══════════════════════════════════════════════════════════════ */
 function buildSummary() {
-  return STEPS.filter(s => ["task","task_combined","task_likert"].includes(s.type)).map(t => {
+  return STEPS.filter(s => ["task","task_combined","task_likert","task_2q"].includes(s.type)).map(t => {
     const ans = state.answers[t.id] || {};
     const base = { id: t.id, phase: t.phase, type: t.questionType };
     if (!Object.keys(ans).length) return { ...base, answered: false };
@@ -342,6 +409,16 @@ function buildSummary() {
         answer: t.questions.map(q => `${q.id}:${ans[q.id]??'—'}`).join(", "),
         correct: null,
         totalSec: timeFmt(ans.totalMs), exploreSec: "—", answerSec: "—" };
+    }
+    if (t.type === "task_2q") {
+      const o1 = (t.q1?.options||[]).find(o=>o.value===ans.q1)?.label ?? ans.q1 ?? "—";
+      const o2 = (t.q2?.options||[]).find(o=>o.value===ans.q2)?.label ?? ans.q2 ?? "—";
+      const c1 = t.q1?.correct != null ? ans.q1 === t.q1.correct : null;
+      const c2 = t.q2?.correct != null ? ans.q2 === t.q2.correct : null;
+      return { ...base, answered: true,
+        answer: `Q1: ${o1} | Q2: ${o2}`,
+        correct: (c1 != null && c2 != null) ? (c1 && c2) : null,
+        totalSec: timeFmt(ans.totalMs), exploreSec: timeFmt(ans.exploreMs), answerSec: timeFmt(ans.answerMs) };
     }
     if (t.type === "task_combined") {
       const opt = (t.options||[]).find(o=>o.value===ans.value)?.label ?? ans.value ?? "—";
@@ -380,7 +457,7 @@ function render() {
   const overlay    = document.getElementById("study-overlay");
   const panel      = document.getElementById("study-panel");
   const taskBanner = document.getElementById("study-task-banner");
-  const isTask = ["task","task_combined","task_likert"].includes(step.type);
+  const isTask = ["task","task_combined","task_likert","task_2q"].includes(step.type);
   if (isTask) {
     overlay.classList.add("hidden");
     taskBanner.classList.remove("hidden");
@@ -425,7 +502,7 @@ function renderConditionSelect(panel) {
       <button class="cond-card" data-c="1">
         <span class="cond-num">C1</span>
         <strong>Table vs. Visual Representations</strong>
-        <p>Compare how a data table and a bar chart differ in conveying wealth inequality.</p>
+        <p>Compare a data table with line, bar, and waffle charts — across juxtaposition, superposition, and animation modes — for conveying wealth inequality.</p>
       </button>
       <button class="cond-card" data-c="2">
         <span class="cond-num">C2</span>
@@ -556,6 +633,38 @@ function buildTaskHTML(step) {
       </div>
     </div>`;
   }
+
+  /* Dual MCQ: Q1 (estimation) + Q2 (magnitude comparison) */
+  if (step.type === "task_2q") {
+    const s1 = ans.q1 ?? null;
+    const s2 = ans.q2 ?? null;
+    const allDone = s1 != null && s2 != null;
+    return `<div class="task-banner-inner">
+      <button class="study-close-btn" id="task-close-btn">✕</button>
+      <div class="task-phase-tag">${step.phase} — ${step.questionType} ${timer}</div>
+      <p class="task-question"><strong>${step.q1.text}</strong></p>
+      <div class="task-options-col tq1-opts" style="margin-bottom:12px">
+        ${step.q1.options.map(o=>`
+          <label class="task-option ${s1===o.value?"selected":""}">
+            <input type="radio" name="tq1" value="${o.value}" ${s1===o.value?"checked":""}/>
+            ${o.label}
+          </label>`).join("")}
+      </div>
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:8px 0">
+      <p class="task-question"><strong>${step.q2.text}</strong></p>
+      <div class="task-options-col tq2-opts">
+        ${step.q2.options.map(o=>`
+          <label class="task-option ${s2===o.value?"selected":""}">
+            <input type="radio" name="tq2" value="${o.value}" ${s2===o.value?"checked":""}/>
+            ${o.label}
+          </label>`).join("")}
+      </div>
+      <div class="task-banner-nav" style="margin-top:8px">
+        <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
+        <button class="study-btn primary" id="task-submit" ${allDone?"":"disabled"}>Submit →</button>
+      </div>
+    </div>`;
+  }
   return "";
 }
 
@@ -624,6 +733,30 @@ function wireTask(step, banner) {
           const btn = banner.querySelector("#task-submit");
           if (btn) btn.disabled = !allDone;
         });
+      });
+    });
+  }
+  if (step.type === "task_2q") {
+    const checkAllDone = () => {
+      const a = state.answers[step.id] || {};
+      const allDone = a.q1 != null && a.q2 != null;
+      const btn = banner.querySelector("#task-submit");
+      if (btn) btn.disabled = !allDone;
+    };
+    banner.querySelectorAll("[name='tq1']").forEach(radio => {
+      radio.closest("label")?.addEventListener("click", () => {
+        banner.querySelectorAll("[name='tq1']").forEach(r => r.closest("label")?.classList.remove("selected"));
+        radio.closest("label")?.classList.add("selected");
+        saveSubAnswer(step.id, "q1", radio.value);
+        checkAllDone();
+      });
+    });
+    banner.querySelectorAll("[name='tq2']").forEach(radio => {
+      radio.closest("label")?.addEventListener("click", () => {
+        banner.querySelectorAll("[name='tq2']").forEach(r => r.closest("label")?.classList.remove("selected"));
+        radio.closest("label")?.classList.add("selected");
+        saveSubAnswer(step.id, "q2", radio.value);
+        checkAllDone();
       });
     });
   }
