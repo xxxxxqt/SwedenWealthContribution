@@ -2,19 +2,18 @@
    User Study — Wealth & Income Inequality Visualization
    Thesis: Kairui Li, Linköping University
 
-   THREE CONDITIONS (participant chooses one):
-     C1  Table vs. other visual representations
-     C2  Bar chart with different Y-axis scales
-     C3  Visualizations with vs. without population encoding
+   UNIFIED FLOW (two parts, sequential):
+     Part 1  Table vs. other visual representations (C1)
+     Part 2  Bar chart with different Y-axis scales (C2)
 
-   THREE QUESTIONS per condition:
-     T1  Effectiveness   — how big is the inequality?
-     T2  Pattern         — open-ended description + comparison MCQ
-     T3  Likert (−5–+5) — ease · clarity · background knowledge
+   PER-STEP QUESTIONS:
+     Q1  Estimation   — Top 10% wealth entry threshold (year-specific)
+     Q2  Magnitude    — Top 0.001% vs. Bottom 50% ratio (year-specific)
+     Q3  Likert (−5–+5) — clarity per chart type
    ============================================================ */
 
-const STUDY_VERSION = "6.0";
-const STORAGE_KEY   = "wealth-study-data-v6";
+const STUDY_VERSION = "7.0";
+const STORAGE_KEY   = "wealth-study-data-v7";
 
 // Paste your OneDrive file-request URL here after creating it in OneDrive
 const ONEDRIVE_REQUEST_URL = "https://1drv.ms/f/c/b440acd6517e9d8a/IgAXJfxK03yxSKR_DAq3UjdmAbPCMZVRrbTZJiKHk7NYb7Q?e=LHCxco";
@@ -35,11 +34,9 @@ const STEP_CONSENT = {
       <input type="checkbox" id="consent-checkbox"/>
       I have read the above and agree to participate.
     </label>`,
-  nextLabel: "Next — Choose your condition →",
+  nextLabel: "Next →",
   requireConsent: true,
 };
-
-const STEP_CONDITION_SELECT = { id: "condition_select", type: "condition_select" };
 
 const STEP_COMPLETE = {
   id: "complete", type: "complete",
@@ -47,49 +44,55 @@ const STEP_COMPLETE = {
   content: `<p>Your responses and timing data are recorded below. Click <strong>Download</strong> to save a JSON file — please share it with the researcher.</p>`,
 };
 
-/* ── CONDITION 1: Table vs. Line / Bar / Waffle ─────────────────────────────
+/* ══════════════════════════════════════════════════════════════
+   PART 1: Table vs. Line / Bar / Waffle
    Structure per docx section 1.1–1.2:
-     Table baseline (3 Qs: Q1+Q2 factual + Q3 Likert)
+     Table baseline (Q1 + Q2 + Q3 Likert)
      8 visual cells × 2 Qs (Q1 estimation + Q2 magnitude)
      1 Q3 Likert per chart type (after all modes for that type)
-   Total: 3 + 16 + 3 = 22 questions across 13 task steps.
-─────────────────────────────────────────────────────────────────────────── */
+   Each step shows a DIFFERENT year so answers cannot be memorised.
+══════════════════════════════════════════════════════════════ */
 const C1_INTRO = {
   id: "c1_intro", type: "info",
-  title: "Condition 1 — Table vs. Visual Representations",
+  title: "Part 1 of 2 — Table vs. Visual Representations",
   content: `
     <p>You will first see the Swedish wealth data as a <strong>TABLE</strong>, then as three visual representations — <strong>line chart</strong>, <strong>bar chart</strong>, and <strong>waffle chart</strong> — each shown in different comparison modes.</p>
-    <p>For every step you will answer the <strong>same two factual questions</strong>:</p>
+    <p>Each representation displays data for a <strong>different year</strong>. For every step you will answer two factual questions:</p>
     <ul>
-      <li><strong>Q1 — Estimation:</strong> "What share of total wealth did the Top 10% hold in Sweden in 2024?"</li>
-      <li><strong>Q2 — Magnitude:</strong> "Roughly how many times larger is the Top 0.001%'s per-person wealth than the Bottom 50%'s in 2024?"</li>
+      <li><strong>Q1 — Estimation:</strong> "How much wealth (in SEK) did a household need to own in [year] to be in the Top 10%?"</li>
+      <li><strong>Q2 — Magnitude:</strong> "Roughly how many times larger is the Top 0.001%'s per-person wealth than the Bottom 50%'s in [year]?"</li>
     </ul>
-    <p>After all steps for each chart type you will give a short clarity rating (Q3).</p>`,
+    <p>After all steps for each chart type you will give a short clarity rating (Q3). Part 2 follows immediately after Part 1.</p>`,
   nextLabel: "View the Table →",
 };
 
-/* ── Shared factual questions (same wording in every cell for comparability) */
-const C1_Q1 = {
-  text: "Q1 — Estimation: What share of total wealth did the Top 10% hold in Sweden in 2024?",
-  options: [
-    { label: "About 20% of all wealth",  value: "a" },
-    { label: "About 45% of all wealth",  value: "b" },
-    { label: "About 68% of all wealth",  value: "c" },
-    { label: "About 90% of all wealth",  value: "d" },
-  ],
-  correct: "c",  /* WID data: p90p100 share ≈ 68% in 2023, extrapolated 2024 */
-};
+/* Year-specific Q1: Top 10% entry threshold (WID variable thwealj992 p90p100) */
+function makeQ1(year, thresholdSEK) {
+  return {
+    text: `Q1 — Estimation: How much wealth (in SEK) did a household need to own in ${year} to be in the Top 10%?`,
+    options: [
+      { label: "Around 500,000 SEK (≈ 5 × 10⁵)", value: "a" },
+      { label: "Around 7 million SEK  (≈ 7 × 10⁶)", value: "b" },
+      { label: "Around 9 million SEK  (≈ 9 × 10⁶)", value: "c" },
+      { label: "Around 50 million SEK (≈ 5 × 10⁷)", value: "d" },
+    ],
+    correct: thresholdSEK < 8000000 ? "b" : "c",
+  };
+}
 
-const C1_Q2 = {
-  text: "Q2 — Magnitude: Roughly how many times larger is the Top 0.001%'s average per-person wealth than the Bottom 50%'s average per-person wealth in 2024?",
-  options: [
-    { label: "About 10 times larger",              value: "a" },
-    { label: "About 100 times larger",             value: "b" },
-    { label: "About 1,000 times larger",           value: "c" },
-    { label: "About 10,000 times larger or more",  value: "d" },
-  ],
-  correct: "d",  /* Top 0.001% ≈ 24.5 B SEK vs Bottom 50% ≈ −687 K SEK; |ratio| ≈ 35,000× */
-};
+/* Year-specific Q2: Top 0.001% vs Bottom 50% magnitude ratio — always > 10 000× */
+function makeQ2(year) {
+  return {
+    text: `Q2 — Magnitude: Roughly how many times larger is the Top 0.001%'s average per-person wealth than the Bottom 50%'s average per-person wealth in ${year}?`,
+    options: [
+      { label: "About 10 times larger",             value: "a" },
+      { label: "About 100 times larger",            value: "b" },
+      { label: "About 1,000 times larger",          value: "c" },
+      { label: "About 10,000 times larger or more", value: "d" },
+    ],
+    correct: "d",
+  };
+}
 
 /* Q3 Likert shared template (per chart type, not per cell) */
 const C1_Q3 = (chartName) => ([
@@ -97,166 +100,180 @@ const C1_Q3 = (chartName) => ([
     lo: "−5 Not at all clear", hi: "Extremely clear +5" },
 ]);
 
-/* ── Baseline: TABLE (Q1 + Q2 + Q3) ────────────────────────────── */
+/* ── Baseline: TABLE — year 2024, threshold 9.17 M SEK ──────────── */
 const C1_TABLE = {
   id: "c1_table", type: "task_2q",
-  phase: "Condition 1 — Baseline", questionType: "Table",
+  phase: "Part 1 — Baseline", questionType: "Table",
   vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024" },
-  taskText: "This <strong>TABLE</strong> shows the average net wealth per person (SEK) for six population groups in Sweden in 2024. Read all values carefully before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  taskText: "This <strong>TABLE</strong> shows the average net wealth per person (SEK) for six population groups in Sweden in <strong>2024</strong>. Read all values carefully before answering.",
+  q1: makeQ1(2024, 9166383),  /* threshold ≈ 9.2 M SEK → correct c */
+  q2: makeQ2(2024),           /* |24.5 B / 687 K| ≈ 35 646× → correct d */
 };
 const C1_TABLE_RATE = {
   id: "c1_table_rate", type: "task_likert",
-  phase: "Condition 1 — Baseline Rating", questionType: "Table — Clarity (Q3)",
+  phase: "Part 1 — Baseline Rating", questionType: "Table — Clarity (Q3)",
   vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024" },
-  taskText: "You are still viewing the <strong>TABLE</strong>. Please rate its clarity.",
+  taskText: "You are still viewing the <strong>TABLE</strong> (2024). Please rate its clarity.",
   questions: C1_Q3("TABLE"),
 };
 
-/* ── Line chart cells (Juxtaposition + Superposition) + Q3 ──────── */
+/* ── Line chart cells — Jux shows 1980–2022, Super shows 1980–2018 */
 const C1_LINE_JUX = {
   id: "c1_line_jux", type: "task_2q",
-  phase: "Condition 1 — Line × Juxtaposition", questionType: "Line chart",
-  vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
-  taskText: "This <strong>LINE CHART</strong> shows average per-person wealth for each group from 1980 to 2024, displayed as <strong>separate panels</strong> (juxtaposition). Focus on the 2024 values before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Line × Juxtaposition", questionType: "Line chart",
+  vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2022", yScale: "linear-zoom" },
+  taskText: "This <strong>LINE CHART</strong> shows average per-person wealth for each group from 1980 to <strong>2022</strong>, displayed as <strong>separate panels</strong> (juxtaposition). Focus on the 2022 values before answering.",
+  q1: makeQ1(2022, 9871628),  /* threshold ≈ 9.9 M SEK → correct c */
+  q2: makeQ2(2022),           /* |25.4 B / 741 K| ≈ 34 261× → correct d */
 };
 const C1_LINE_SUPER = {
   id: "c1_line_super", type: "task_2q",
-  phase: "Condition 1 — Line × Superposition", questionType: "Line chart",
-  vizConfig: { representation: "line", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
-  taskText: "The same data is now shown as a <strong>LINE CHART</strong> with all groups <strong>overlaid</strong> on one chart (superposition). Focus on the 2024 values before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Line × Superposition", questionType: "Line chart",
+  vizConfig: { representation: "line", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2018", yScale: "linear-zoom" },
+  taskText: "The same data is now shown as a <strong>LINE CHART</strong> with all groups <strong>overlaid</strong> on one chart (superposition). Focus on the <strong>2018</strong> values before answering.",
+  q1: makeQ1(2018, 8280918),  /* threshold ≈ 8.3 M SEK → correct c */
+  q2: makeQ2(2018),           /* |22.0 B / 622 K| ≈ 35 400× → correct d */
 };
 const C1_LINE_RATE = {
   id: "c1_line_rate", type: "task_likert",
-  phase: "Condition 1 — Line Chart Rating", questionType: "Line chart — Clarity (Q3)",
-  vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
+  phase: "Part 1 — Line Chart Rating", questionType: "Line chart — Clarity (Q3)",
+  vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2022", yScale: "linear-zoom" },
   taskText: "You have now seen the <strong>LINE CHART</strong> in two comparison modes. Please rate overall clarity.",
   questions: C1_Q3("LINE CHART"),
 };
 
-/* ── Bar chart cells (Juxtaposition + Superposition + Animation) + Q3 */
+/* ── Bar chart cells — Jux 2023, Super 2021, Anim 1980–2019 ───── */
 const C1_BAR_JUX = {
   id: "c1_bar_jux", type: "task_2q",
-  phase: "Condition 1 — Bar × Juxtaposition", questionType: "Bar chart",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
-  taskText: "This <strong>BAR CHART</strong> shows average per-person wealth for each group in 2024, with separate bars shown <strong>side by side</strong> (juxtaposition). Use the zoom slider to explore before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Bar × Juxtaposition", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2023", yScale: "linear-zoom" },
+  taskText: "This <strong>BAR CHART</strong> shows average per-person wealth for each group in <strong>2023</strong>, with separate bars shown <strong>side by side</strong> (juxtaposition). Use the zoom slider to explore before answering.",
+  q1: makeQ1(2023, 9111251),  /* threshold ≈ 9.1 M SEK → correct c */
+  q2: makeQ2(2023),           /* |22.3 B / 683 K| ≈ 32 688× → correct d */
 };
 const C1_BAR_SUPER = {
   id: "c1_bar_super", type: "task_2q",
-  phase: "Condition 1 — Bar × Superposition", questionType: "Bar chart",
-  vizConfig: { representation: "bar", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
-  taskText: "The same data is now shown as a <strong>BAR CHART</strong> with all groups <strong>overlaid</strong> on one axis (superposition). Use the zoom slider to explore before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Bar × Superposition", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "2021", yScale: "linear-zoom" },
+  taskText: "This <strong>BAR CHART</strong> now shows <strong>2021</strong> data with all groups <strong>overlaid</strong> on one axis (superposition). Use the zoom slider to explore before answering.",
+  q1: makeQ1(2021, 10049551), /* threshold ≈ 10.0 M SEK → correct c */
+  q2: makeQ2(2021),           /* |28.6 B / 755 K| ≈ 37 814× → correct d */
 };
 const C1_BAR_ANIM = {
   id: "c1_bar_anim", type: "task_2q",
-  phase: "Condition 1 — Bar × Animation", questionType: "Bar chart",
-  vizConfig: { representation: "bar", comparison: "animation", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
-  taskText: "The same data is now shown as an <strong>ANIMATED BAR CHART</strong> that steps through years 1980 → 2024. Let it run to 2024 (or drag the slider) before answering.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Bar × Animation", questionType: "Bar chart",
+  vizConfig: { representation: "bar", comparison: "animation", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2019", yScale: "linear-zoom" },
+  taskText: "This <strong>ANIMATED BAR CHART</strong> steps through years 1980 → <strong>2019</strong>. Let it run to 2019 (or drag the slider) before answering.",
+  q1: makeQ1(2019, 8604095),  /* threshold ≈ 8.6 M SEK → correct c */
+  q2: makeQ2(2019),           /* |22.1 B / 647 K| ≈ 34 116× → correct d */
 };
 const C1_BAR_RATE = {
   id: "c1_bar_rate", type: "task_likert",
-  phase: "Condition 1 — Bar Chart Rating", questionType: "Bar chart — Clarity (Q3)",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024", yScale: "linear-zoom" },
+  phase: "Part 1 — Bar Chart Rating", questionType: "Bar chart — Clarity (Q3)",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2023", yScale: "linear-zoom" },
   taskText: "You have now seen the <strong>BAR CHART</strong> in three comparison modes. Please rate overall clarity.",
   questions: C1_Q3("BAR CHART"),
 };
 
-/* ── Waffle chart cells (Juxtaposition + Superposition + Animation) + Q3 */
+/* ── Waffle chart cells — income data; Qs reference wealth years seen earlier */
 const C1_WAFFLE_JUX = {
   id: "c1_waffle_jux", type: "task_2q",
-  phase: "Condition 1 — Waffle × Juxtaposition", questionType: "Waffle chart",
+  phase: "Part 1 — Waffle × Juxtaposition", questionType: "Waffle chart",
   vizConfig: { representation: "waffle", comparison: "juxtaposition", metric: "income", popEncoding: "without", years: "2020" },
-  taskText: "This <strong>WAFFLE CHART</strong> shows each group's <em>share</em> of Sweden's total income in 2020 (each cell = 1%). Each group has its own panel (<strong>juxtaposition</strong>). Answer both questions about <em>wealth</em> inequality based on all charts you have seen so far.",
-  q1: C1_Q1, q2: C1_Q2,
+  taskText: "This <strong>WAFFLE CHART</strong> shows each group's <em>share</em> of Sweden's total income in <strong>2020</strong> (each cell = 1%). Each group has its own panel (juxtaposition). Answer both questions about <em>wealth</em> inequality using the pattern you observed across all previous charts.",
+  q1: makeQ1(2020, 9456552),  /* threshold ≈ 9.5 M SEK → correct c */
+  q2: makeQ2(2020),           /* |18.9 B / 711 K| ≈ 26 541× → correct d */
 };
 const C1_WAFFLE_SUPER = {
   id: "c1_waffle_super", type: "task_2q",
-  phase: "Condition 1 — Waffle × Superposition", questionType: "Waffle chart",
-  vizConfig: { representation: "waffle", comparison: "superposition", metric: "income", popEncoding: "without", years: "2020" },
-  taskText: "The same income data is now shown as a <strong>WAFFLE CHART</strong> with all groups <strong>combined</strong> in one 10×10 grid (superposition). Answer both questions about <em>wealth</em> inequality.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Waffle × Superposition", questionType: "Waffle chart",
+  vizConfig: { representation: "waffle", comparison: "superposition", metric: "income", popEncoding: "without", years: "2015" },
+  taskText: "The income data is now shown for <strong>2015</strong> as a <strong>WAFFLE CHART</strong> with all groups <strong>combined</strong> in one 10×10 grid (superposition). Answer both questions about <em>wealth</em> inequality.",
+  q1: makeQ1(2015, 7230814),  /* threshold ≈ 7.2 M SEK → correct b (distinct!) */
+  q2: makeQ2(2015),           /* |20.1 B / 545 K| ≈ 36 955× → correct d */
 };
 const C1_WAFFLE_ANIM = {
   id: "c1_waffle_anim", type: "task_2q",
-  phase: "Condition 1 — Waffle × Animation", questionType: "Waffle chart",
-  vizConfig: { representation: "waffle", comparison: "animation", metric: "income", popEncoding: "without", years: "1980,1990,2000,2010,2020" },
-  taskText: "The same income data is now shown as an <strong>ANIMATED WAFFLE CHART</strong> stepping through years. Answer both questions about <em>wealth</em> inequality based on all evidence you have accumulated.",
-  q1: C1_Q1, q2: C1_Q2,
+  phase: "Part 1 — Waffle × Animation", questionType: "Waffle chart",
+  vizConfig: { representation: "waffle", comparison: "animation", metric: "income", popEncoding: "without", years: "1980,1990,2000,2010,2015,2020" },
+  taskText: "The income data is now shown as an <strong>ANIMATED WAFFLE CHART</strong> stepping through 1980 → <strong>2020</strong>. Answer both questions about <em>wealth</em> inequality based on all evidence you have accumulated.",
+  q1: makeQ1(2020, 9456552),  /* threshold ≈ 9.5 M SEK → correct c */
+  q2: makeQ2(2020),           /* |18.9 B / 711 K| ≈ 26 541× → correct d */
 };
 const C1_WAFFLE_RATE = {
   id: "c1_waffle_rate", type: "task_likert",
-  phase: "Condition 1 — Waffle Chart Rating", questionType: "Waffle chart — Clarity (Q3)",
+  phase: "Part 1 — Waffle Chart Rating", questionType: "Waffle chart — Clarity (Q3)",
   vizConfig: { representation: "waffle", comparison: "juxtaposition", metric: "income", popEncoding: "without", years: "2020" },
   taskText: "You have now seen the <strong>WAFFLE CHART</strong> in three comparison modes. Please rate overall clarity.",
   questions: C1_Q3("WAFFLE CHART"),
 };
 
-/* ── CONDITION 2: Y-axis scales (4 variants × 3 questions = 12) ─── */
+/* ══════════════════════════════════════════════════════════════
+   PART 2: Y-axis scales — each variant uses a DIFFERENT year
+   so the chart shape differs and answers cannot be memorised.
+   Options span four orders of magnitude; correct is always "c".
+══════════════════════════════════════════════════════════════ */
 const C2_INTRO = {
   id: "c2_intro", type: "info",
-  title: "Condition 2 — Bar Chart Y-axis Scales",
+  title: "Part 2 of 2 — Bar Chart Y-axis Scales",
   content: `
-    <p>In this condition you will see the <strong>same 2020 Swedish wealth data</strong> displayed with four different Y-axis scales:</p>
+    <p>In this final part you will see Swedish wealth data displayed with four different Y-axis scales, each for a different year:</p>
     <ol style="font-size:14px;line-height:1.8;padding-left:20px;margin:8px 0 12px">
       <li><strong>Linear (full range)</strong> — equal spacing, full data range</li>
       <li><strong>Logarithmic</strong> — each step represents a 10× increase</li>
       <li><strong>Scale break (zig-zag)</strong> — axis jumps over the mid-range gap</li>
       <li><strong>Linear with zoom window</strong> — range slider to explore the axis</li>
     </ol>
-    <p>For each scale you will answer <strong>one value-reading question</strong> and rate the scale on <strong>two Likert items</strong>. A final question then asks about the overall magnitude of inequality.</p>`,
+    <p>For each scale you will answer <strong>one value-reading question</strong> and rate the scale on <strong>two items</strong>. A final question then asks about the overall magnitude of inequality.</p>`,
   nextLabel: "Start Scale 1 →",
 };
 
-/* Q1 options are identical across all four variants so accuracy is comparable */
+/* Shared options — orders of magnitude apart; correct answer is always "c"
+   (actual Top 0.001% values 2019–2023 range ≈ 22–29 billion SEK) */
 const C2_Q1_OPTIONS = [
-  { label: "Around 19 million SEK  (≈ 1.9 × 10⁷)",   value: "a" },
-  { label: "Around 190 million SEK (≈ 1.9 × 10⁸)",   value: "b" },
-  { label: "Around 19 billion SEK  (≈ 1.9 × 10¹⁰)",  value: "c" },
-  { label: "Around 190 billion SEK (≈ 1.9 × 10¹¹)",  value: "d" },
+  { label: "Around 20 million SEK  (≈ 2 × 10⁷)",  value: "a" },
+  { label: "Around 200 million SEK (≈ 2 × 10⁸)",  value: "b" },
+  { label: "Around 20 billion SEK  (≈ 2 × 10¹⁰)", value: "c" },
+  { label: "Around 200 billion SEK (≈ 2 × 10¹¹)", value: "d" },
 ];
-const C2_Q1_CORRECT = "c"; /* actual value ≈ 18.9 billion SEK */
+const C2_Q1_CORRECT = "c";
 
 const C2_V1 = {
   id: "c2_v1", type: "task_combined",
-  phase: "Condition 2 — Scale 1 of 4", questionType: "Linear (Full Range)",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear" },
-  taskText: "This bar chart uses a <strong>LINEAR (full range) Y-axis</strong>. Equal vertical distances represent equal SEK amounts across the entire data range — from the most negative value to the highest. No break or zoom is applied.",
-  questionText: "Q1 — Value reading: Looking at this linear-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  phase: "Part 2 — Scale 1 of 4", questionType: "Linear (Full Range)",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2019", yScale: "linear" },
+  taskText: "This bar chart uses a <strong>LINEAR (full range) Y-axis</strong> for <strong>2019</strong>. Equal vertical distances represent equal SEK amounts across the entire data range. No break or zoom is applied.",
+  questionText: "Q1 — Value reading: Looking at this linear-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2019?",
   options: C2_Q1_OPTIONS,
-  correct: C2_Q1_CORRECT,
+  correct: C2_Q1_CORRECT, /* actual ≈ 22.1 billion SEK in 2019 */
   likertQuestions: [
-    { id: "lq1", text: "This linear Y-axis makes the Top 0.001%'s extreme wealth clearly visible relative to the other groups",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                                lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq1", text: "This linear Y-axis makes the Top 0.001%'s extreme wealth clearly visible relative to the other groups", lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                              lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
 };
 
 const C2_V2 = {
   id: "c2_v2", type: "task_combined",
-  phase: "Condition 2 — Scale 2 of 4", questionType: "Logarithmic",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "log" },
-  taskText: "This bar chart uses a <strong>LOGARITHMIC Y-axis</strong>. Each equal step on the axis represents a ×10 increase in wealth — not a fixed SEK amount. Groups with near-zero or negative wealth cannot be shown on a log scale.",
-  questionText: "Q1 — Value reading: Looking at this logarithmic-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  phase: "Part 2 — Scale 2 of 4", questionType: "Logarithmic",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2022", yScale: "log" },
+  taskText: "This bar chart uses a <strong>LOGARITHMIC Y-axis</strong> for <strong>2022</strong>. Each equal step on the axis represents a ×10 increase in wealth. Groups with near-zero or negative wealth cannot be shown on a log scale.",
+  questionText: "Q1 — Value reading: Looking at this logarithmic-scale chart, approximately what is the Top 0.001%'s average per-person wealth in 2022?",
   options: C2_Q1_OPTIONS,
-  correct: C2_Q1_CORRECT,
+  correct: C2_Q1_CORRECT, /* actual ≈ 25.4 billion SEK in 2022 */
   likertQuestions: [
-    { id: "lq1", text: "This logarithmic Y-axis makes wealth differences across all visible groups clearly comparable",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                       lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq1", text: "This logarithmic Y-axis makes wealth differences across all visible groups clearly comparable", lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis scale is easy to understand",                                                      lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
 };
 
 const C2_V3 = {
   id: "c2_v3", type: "task_combined",
-  phase: "Condition 2 — Scale 3 of 4", questionType: "Scale Break (Zig-zag)",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "break" },
-  taskText: "This bar chart uses a <strong>SCALE BREAK</strong> (the zig-zag symbol on the Y-axis). The axis skips a large range of values so that both the lower-group bars and the extreme Top 0.001% bar fit within the same chart.",
-  questionText: "Q1 — Value reading: Looking at this scale-break chart, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  phase: "Part 2 — Scale 3 of 4", questionType: "Scale Break (Zig-zag)",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2021", yScale: "break" },
+  taskText: "This bar chart uses a <strong>SCALE BREAK</strong> (the zig-zag symbol on the Y-axis) for <strong>2021</strong>. The axis skips a large range so that both the lower-group bars and the extreme Top 0.001% bar fit within the same chart.",
+  questionText: "Q1 — Value reading: Looking at this scale-break chart, approximately what is the Top 0.001%'s average per-person wealth in 2021?",
   options: C2_Q1_OPTIONS,
-  correct: C2_Q1_CORRECT,
+  correct: C2_Q1_CORRECT, /* actual ≈ 28.6 billion SEK in 2021 */
   likertQuestions: [
     { id: "lq1", text: "The scale break makes it easy to compare both the lower groups and the extreme top group simultaneously", lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
     { id: "lq2", text: "This Y-axis (with its break) is easy to understand",                                                      lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
@@ -265,62 +282,52 @@ const C2_V3 = {
 
 const C2_V4 = {
   id: "c2_v4", type: "task_combined",
-  phase: "Condition 2 — Scale 4 of 4", questionType: "Linear with Zoom Window",
-  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
-  taskText: "This bar chart uses a <strong>LINEAR Y-axis with a zoom window</strong>. The range slider (above the chart) controls which portion of the Y-axis is visible — zoom in to see lower groups in detail, or zoom out to reveal the full range including the Top 0.001%.",
-  questionText: "Q1 — Value reading: Using the zoom slider to explore, approximately what is the Top 0.001%'s average per-person wealth in 2020?",
+  phase: "Part 2 — Scale 4 of 4", questionType: "Linear with Zoom Window",
+  vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2023", yScale: "linear-zoom" },
+  taskText: "This bar chart uses a <strong>LINEAR Y-axis with a zoom window</strong> for <strong>2023</strong>. The range slider controls which portion of the Y-axis is visible — zoom in to see lower groups in detail, or zoom out to reveal the full range.",
+  questionText: "Q1 — Value reading: Using the zoom slider to explore, approximately what is the Top 0.001%'s average per-person wealth in 2023?",
   options: C2_Q1_OPTIONS,
-  correct: C2_Q1_CORRECT,
+  correct: C2_Q1_CORRECT, /* actual ≈ 22.3 billion SEK in 2023 */
   likertQuestions: [
-    { id: "lq1", text: "The zoom slider helps me understand the full scale of wealth inequality across all groups",  lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
-    { id: "lq2", text: "This Y-axis approach (with the zoom slider) is easy to use",                               lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq1", text: "The zoom slider helps me understand the full scale of wealth inequality across all groups", lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
+    { id: "lq2", text: "This Y-axis approach (with the zoom slider) is easy to use",                              lo: "−5 Strongly disagree", hi: "Strongly agree +5" },
   ],
 };
 
-/* Q2 — Magnitude comparison: shown once after all four scales, on zoom chart */
+/* Final magnitude question — uses 2020 reference year on zoom chart */
 const C2_COMPARE = {
   id: "c2_compare", type: "task",
-  phase: "Condition 2 — Final Question", questionType: "Magnitude Comparison (Q2)",
+  phase: "Part 2 — Final Question", questionType: "Magnitude Comparison (Q2)",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2020", yScale: "linear-zoom" },
-  taskText: "Now that you have seen the same data through all four Y-axis scales, here is a final question. Use the zoom slider to explore the chart as needed. <em>Data: Top 0.001% ≈ 19 billion SEK per person; Middle 40% ≈ 3.5 million SEK per person (2020).</em>",
+  taskText: "You have now seen the data through all four Y-axis scales. Here is a final question using <strong>2020</strong> data. Use the zoom slider as needed. <em>Hint: Top 0.001% ≈ 19 billion SEK; Middle 40% ≈ 3.5 million SEK (2020).</em>",
   questionText: "Q2 — Magnitude comparison: Roughly how many times larger is the Top 0.001%'s average per-person wealth compared with the Middle 40%'s average per-person wealth in 2020?",
   options: [
-    { label: "About 10 times larger",              value: "a" },
-    { label: "About 100 times larger",             value: "b" },
-    { label: "About 1,000 times larger",           value: "c" },
-    { label: "About 5,000 times larger or more",   value: "d" },
+    { label: "About 10 times larger",            value: "a" },
+    { label: "About 100 times larger",           value: "b" },
+    { label: "About 1,000 times larger",         value: "c" },
+    { label: "About 5,000 times larger or more", value: "d" },
   ],
-  correct: "d", /* actual ratio ≈ 18.9B / 3.47M ≈ 5,430× */
+  correct: "d", /* actual ratio ≈ 18.9 B / 3.47 M ≈ 5 430× */
 };
 
-/* ── Dynamic STEPS ──────────────────────────────────────────── */
-let STEPS = [STEP_CONSENT, STEP_CONDITION_SELECT, STEP_COMPLETE];
-
-function applyCondition(c) {
-  state.condition = c;
-  const map = {
-    1: [
-      STEP_CONSENT, STEP_CONDITION_SELECT, C1_INTRO,
-      /* Table baseline */  C1_TABLE, C1_TABLE_RATE,
-      /* Line cells */      C1_LINE_JUX, C1_LINE_SUPER, C1_LINE_RATE,
-      /* Bar cells */       C1_BAR_JUX, C1_BAR_SUPER, C1_BAR_ANIM, C1_BAR_RATE,
-      /* Waffle cells */    C1_WAFFLE_JUX, C1_WAFFLE_SUPER, C1_WAFFLE_ANIM, C1_WAFFLE_RATE,
-      STEP_COMPLETE,
-    ],
-    2: [STEP_CONSENT, STEP_CONDITION_SELECT, C2_INTRO, C2_V1, C2_V2, C2_V3, C2_V4, C2_COMPARE, STEP_COMPLETE],
-  };
-  STEPS = map[c] || STEPS;
-  state.currentStep = 2;
-  persist();
-  render();
-}
+/* ── Unified step sequence (both parts, linear flow) ─────────── */
+const STEPS = [
+  STEP_CONSENT,
+  C1_INTRO,
+  /* Part 1 — Table baseline */  C1_TABLE, C1_TABLE_RATE,
+  /* Part 1 — Line cells */      C1_LINE_JUX, C1_LINE_SUPER, C1_LINE_RATE,
+  /* Part 1 — Bar cells */       C1_BAR_JUX, C1_BAR_SUPER, C1_BAR_ANIM, C1_BAR_RATE,
+  /* Part 1 — Waffle cells */    C1_WAFFLE_JUX, C1_WAFFLE_SUPER, C1_WAFFLE_ANIM, C1_WAFFLE_RATE,
+  C2_INTRO,
+  /* Part 2 — Y-axis scales */   C2_V1, C2_V2, C2_V3, C2_V4, C2_COMPARE,
+  STEP_COMPLETE,
+];
 
 /* ══════════════════════════════════════════════════════════════
    STATE
 ══════════════════════════════════════════════════════════════ */
 const state = {
   currentStep:   0,
-  condition:     null,
   startTime:     Date.now(),
   stepTimes:     {},
   taskQTimes:    {},
@@ -438,13 +445,13 @@ function buildSummary() {
 function downloadData() {
   const data = {
     participantId: state.participantId, studyVersion: STUDY_VERSION,
-    condition: state.condition, startTime: new Date(state.startTime).toISOString(),
+    startTime: new Date(state.startTime).toISOString(),
     completedTime: new Date().toISOString(), answers: state.answers, summary: buildSummary(),
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  a.href = url; a.download = `study-c${state.condition}-${state.participantId}.json`; a.click();
+  a.href = url; a.download = `study-${state.participantId}.json`; a.click();
   URL.revokeObjectURL(url);
 }
 
@@ -467,9 +474,8 @@ function render() {
   } else {
     taskBanner.classList.add("hidden");
     overlay.classList.remove("hidden");
-    if (step.type === "info")             renderInfo(step, panel);
-    if (step.type === "condition_select") renderConditionSelect(panel);
-    if (step.type === "complete")         renderComplete(step, panel);
+    if (step.type === "info")     renderInfo(step, panel);
+    if (step.type === "complete") renderComplete(step, panel);
   }
   updateProgress();
 }
@@ -490,32 +496,6 @@ function renderInfo(step, panel) {
     cb.addEventListener("change", () => { btn.disabled = !cb.checked; });
   }
   panel.querySelector("#study-next")?.addEventListener("click", advance);
-  panel.querySelector("#study-prev")?.addEventListener("click", retreat);
-}
-
-function renderConditionSelect(panel) {
-  panel.innerHTML = `
-    <div class="study-phase-tag">Choose Your Condition</div>
-    <h2 class="study-title">Select one study condition to participate in</h2>
-    <p style="font-size:14px;color:#5f6368;margin:0 0 16px">Each condition focuses on a different aspect of data visualization. Choose the one that interests you most.</p>
-    <div class="cond-cards">
-      <button class="cond-card" data-c="1">
-        <span class="cond-num">C1</span>
-        <strong>Table vs. Visual Representations</strong>
-        <p>Compare a data table with line, bar, and waffle charts — across juxtaposition, superposition, and animation modes — for conveying wealth inequality.</p>
-      </button>
-      <button class="cond-card" data-c="2">
-        <span class="cond-num">C2</span>
-        <strong>Bar Chart Y-axis Scales</strong>
-        <p>Compare four Y-axis designs — linear, logarithmic, scale break, and zoom window — and how each reveals extreme wealth inequality.</p>
-      </button>
-    </div>
-    <div class="study-nav">
-      <button class="study-btn secondary" id="study-prev">← Back</button>
-    </div>`;
-  panel.querySelectorAll(".cond-card").forEach(btn =>
-    btn.addEventListener("click", () => applyCondition(Number(btn.dataset.c)))
-  );
   panel.querySelector("#study-prev")?.addEventListener("click", retreat);
 }
 
@@ -541,7 +521,7 @@ function buildTaskHTML(step) {
       </div>
       <p class="task-desc">${step.taskText}</p>
       <div class="task-banner-nav">
-        ${state.currentStep > 2 ? `<button class="study-btn secondary" id="task-back">← Back</button>` : ""}
+        ${state.currentStep > 1 ? `<button class="study-btn secondary" id="task-back">← Back</button>` : ""}
         <button class="study-btn primary" id="task-ready">I've examined the chart — show question →</button>
       </div>
     </div>`;
@@ -780,7 +760,6 @@ function startTaskTimer(banner, t0) {
 /* ── Complete ────────────────────────────────────────────────── */
 function renderComplete(step, panel) {
   const summary = buildSummary();
-  const condLabel = {1:"Table vs. Visual (C1)",2:"Y-axis Scales (C2)"};
   const rows = summary.map(r => {
     if (!r.answered) return `<tr><td>${r.phase||r.id}</td><td>${r.type}</td><td colspan="2"><em>—</em></td></tr>`;
     return `<tr>
@@ -791,7 +770,7 @@ function renderComplete(step, panel) {
     </tr>`;
   }).join("");
   panel.innerHTML = `
-    <div class="study-phase-tag">Complete — ${condLabel[state.condition]||""}</div>
+    <div class="study-phase-tag">Complete — All Parts Done</div>
     <h2 class="study-title">${step.title}</h2>
     <div class="study-body">${step.content}</div>
     <div class="study-summary">
@@ -859,7 +838,6 @@ export function initStudy() {
       if (p.version === STUDY_VERSION && p.state) {
         Object.assign(state, p.state);
         state.taskQTimes = state.taskQTimes || {};
-        if (state.condition) applyCondition(state.condition);
       }
     }
   } catch(_) {}
