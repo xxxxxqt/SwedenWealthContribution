@@ -12,8 +12,8 @@
      Q3  Likert (−5–+5) — clarity per chart type
    ============================================================ */
 
-const STUDY_VERSION = "8.0";
-const STORAGE_KEY   = "wealth-study-data-v8";
+const STUDY_VERSION = "9.0";
+const STORAGE_KEY   = "wealth-study-data-v9";
 
 // Paste your OneDrive file-request URL here after creating it in OneDrive
 const ONEDRIVE_REQUEST_URL = "https://1drv.ms/f/c/b440acd6517e9d8a/IgAXJfxK03yxSKR_DAq3UjdmAbPCMZVRrbTZJiKHk7NYb7Q?e=LHCxco";
@@ -58,7 +58,7 @@ const C1_INTRO = {
     <p>You will first see the Swedish wealth data as a <strong>TABLE</strong>, then as two visual representations — <strong>line chart</strong> and <strong>bar chart</strong> — each shown in different comparison modes.</p>
     <p>Each step displays data for a <strong>different year</strong>. For every step you will answer two factual questions:</p>
     <ul>
-      <li><strong>Q1 — Estimation:</strong> "How much wealth (in SEK) did a household need to own in [year] to be in the Top 10%?"</li>
+      <li><strong>Q1 — Estimation:</strong> "Based on the chart, approximately what was the average per-person wealth for the 'Top 10%' group in [year]?"</li>
       <li><strong>Q2 — Magnitude:</strong> "Roughly how many times larger is the Top 0.001%'s per-person wealth than the Top 1%'s in [year]?"</li>
     </ul>
     <p>After all steps for each chart type you will give a short clarity rating (Q3). Part 2 follows immediately after Part 1.</p>`,
@@ -66,49 +66,50 @@ const C1_INTRO = {
 };
 
 /* Q1 — year-specific options so the correct answer is always "c"
-   Thresholds (WID thwealj992 p90p100): 1980=1.3M, 1990=1.5M,
-   2000=3.2M, 2010=5.7M, 2020=9.5M, 2024=9.2M */
-function makeQ1(year, thresholdSEK) {
+   Values are the chart-displayed disjoint "Top 10%" average:
+     top9 = (avg_top10 × 10 − avg_top1) / 9
+   1980≈2.5M, 1990≈3.1M, 2000≈5.1M, 2010≈9.0M, 2020≈14.8M, 2024≈14.3M */
+function makeQ1(year) {
   const opts = {
     1980: [
-      { label: "Around 200,000 SEK (≈ 2 × 10⁵)", value: "a" },
-      { label: "Around 700,000 SEK (≈ 7 × 10⁵)", value: "b" },
-      { label: "Around 1.3 million SEK (≈ 1.3 × 10⁶)", value: "c" },
-      { label: "Around 5 million SEK  (≈ 5 × 10⁶)", value: "d" },
+      { label: "Around 500,000 SEK (≈ 5 × 10⁵)",    value: "a" },
+      { label: "Around 1 million SEK (≈ 10⁶)",       value: "b" },
+      { label: "Around 2.5 million SEK (≈ 2.5 × 10⁶)", value: "c" },
+      { label: "Around 10 million SEK (≈ 10⁷)",      value: "d" },
     ],
     1990: [
-      { label: "Around 300,000 SEK (≈ 3 × 10⁵)", value: "a" },
-      { label: "Around 800,000 SEK (≈ 8 × 10⁵)", value: "b" },
-      { label: "Around 1.5 million SEK (≈ 1.5 × 10⁶)", value: "c" },
-      { label: "Around 6 million SEK  (≈ 6 × 10⁶)", value: "d" },
+      { label: "Around 700,000 SEK (≈ 7 × 10⁵)",    value: "a" },
+      { label: "Around 1.5 million SEK (≈ 1.5 × 10⁶)", value: "b" },
+      { label: "Around 3 million SEK (≈ 3 × 10⁶)",  value: "c" },
+      { label: "Around 12 million SEK (≈ 1.2 × 10⁷)", value: "d" },
     ],
     2000: [
-      { label: "Around 500,000 SEK (≈ 5 × 10⁵)", value: "a" },
-      { label: "Around 1.5 million SEK (≈ 1.5 × 10⁶)", value: "b" },
-      { label: "Around 3 million SEK  (≈ 3 × 10⁶)", value: "c" },
-      { label: "Around 10 million SEK (≈ 10⁷)", value: "d" },
-    ],
-    2010: [
-      { label: "Around 1 million SEK  (≈ 10⁶)", value: "a" },
-      { label: "Around 3 million SEK  (≈ 3 × 10⁶)", value: "b" },
-      { label: "Around 6 million SEK  (≈ 6 × 10⁶)", value: "c" },
+      { label: "Around 1 million SEK (≈ 10⁶)",       value: "a" },
+      { label: "Around 2.5 million SEK (≈ 2.5 × 10⁶)", value: "b" },
+      { label: "Around 5 million SEK (≈ 5 × 10⁶)",  value: "c" },
       { label: "Around 20 million SEK (≈ 2 × 10⁷)", value: "d" },
     ],
+    2010: [
+      { label: "Around 2 million SEK (≈ 2 × 10⁶)",  value: "a" },
+      { label: "Around 4.5 million SEK (≈ 4.5 × 10⁶)", value: "b" },
+      { label: "Around 9 million SEK (≈ 9 × 10⁶)",  value: "c" },
+      { label: "Around 35 million SEK (≈ 3.5 × 10⁷)", value: "d" },
+    ],
     2020: [
-      { label: "Around 2 million SEK  (≈ 2 × 10⁶)", value: "a" },
-      { label: "Around 5 million SEK  (≈ 5 × 10⁶)", value: "b" },
-      { label: "Around 9.5 million SEK (≈ 9.5 × 10⁶)", value: "c" },
-      { label: "Around 30 million SEK (≈ 3 × 10⁷)", value: "d" },
+      { label: "Around 3 million SEK (≈ 3 × 10⁶)",  value: "a" },
+      { label: "Around 7 million SEK (≈ 7 × 10⁶)",  value: "b" },
+      { label: "Around 15 million SEK (≈ 1.5 × 10⁷)", value: "c" },
+      { label: "Around 60 million SEK (≈ 6 × 10⁷)", value: "d" },
     ],
     2024: [
-      { label: "Around 2 million SEK  (≈ 2 × 10⁶)", value: "a" },
-      { label: "Around 5 million SEK  (≈ 5 × 10⁶)", value: "b" },
-      { label: "Around 9 million SEK  (≈ 9 × 10⁶)", value: "c" },
-      { label: "Around 30 million SEK (≈ 3 × 10⁷)", value: "d" },
+      { label: "Around 3 million SEK (≈ 3 × 10⁶)",  value: "a" },
+      { label: "Around 7 million SEK (≈ 7 × 10⁶)",  value: "b" },
+      { label: "Around 14 million SEK (≈ 1.4 × 10⁷)", value: "c" },
+      { label: "Around 55 million SEK (≈ 5.5 × 10⁷)", value: "d" },
     ],
   };
   return {
-    text: `Q1 — Estimation: How much wealth (in SEK) did a household need to own in ${year} to be in the Top 10%?`,
+    text: `Q1 — Estimation: Based on the chart, approximately what was the average per-person wealth for the 'Top 10%' group in ${year}?`,
     options: opts[year] || opts[2024],
     correct: "c",
   };
@@ -142,7 +143,7 @@ const C1_TABLE = {
   phase: "Part 1 — Baseline", questionType: "Table",
   vizConfig: { representation: "table", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2024" },
   taskText: "This <strong>TABLE</strong> shows the average net wealth per person (SEK) for six population groups in Sweden in <strong>2024</strong>. Read all values carefully before answering.",
-  q1: makeQ1(2024, 9166383),  /* threshold ≈ 9.2 M SEK; correct c */
+  q1: makeQ1(2024),  /* chart top9 ≈ 14.3 M SEK; correct c */
   q2: makeQ2(2024),           /* 24.5 B / 86.9 M ≈ 282×; correct c */
 };
 const C1_TABLE_RATE = {
@@ -159,7 +160,7 @@ const C1_LINE_JUX = {
   phase: "Part 1 — Line × Juxtaposition", questionType: "Line chart",
   vizConfig: { representation: "line", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
   taskText: "This <strong>LINE CHART</strong> shows average per-person wealth from 1980 to 2024 in <strong>separate panels</strong> (juxtaposition). Focus on the <strong>2020</strong> values before answering.",
-  q1: makeQ1(2020, 9456552),  /* threshold ≈ 9.5 M SEK; correct c */
+  q1: makeQ1(2020),  /* chart top9 ≈ 14.8 M SEK; correct c */
   q2: makeQ2(2020),           /* 18.9 B / 83.6 M ≈ 226×; correct c */
 };
 const C1_LINE_SUPER = {
@@ -167,7 +168,7 @@ const C1_LINE_SUPER = {
   phase: "Part 1 — Line × Superposition", questionType: "Line chart",
   vizConfig: { representation: "line", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" },
   taskText: "The same data is now shown as a <strong>LINE CHART</strong> with all groups <strong>overlaid</strong> on one chart (superposition). Focus on the <strong>2010</strong> values before answering.",
-  q1: makeQ1(2010, 5748845),  /* threshold ≈ 5.7 M SEK; correct c */
+  q1: makeQ1(2010),  /* chart top9 ≈ 9.0 M SEK; correct c */
   q2: makeQ2(2010),           /* 17.1 B / 56.2 M ≈ 305×; correct c */
 };
 const C1_LINE_RATE = {
@@ -184,7 +185,7 @@ const C1_BAR_JUX = {
   phase: "Part 1 — Bar × Juxtaposition", questionType: "Bar chart",
   vizConfig: { representation: "bar", comparison: "juxtaposition", metric: "wealth", popEncoding: "without", years: "2000", yScale: "linear-zoom" },
   taskText: "This <strong>BAR CHART</strong> shows average per-person wealth for each group in <strong>2000</strong>, with separate bars shown <strong>side by side</strong> (juxtaposition). Use the zoom slider to explore before answering.",
-  q1: makeQ1(2000, 3186408),  /* threshold ≈ 3.2 M SEK; correct c */
+  q1: makeQ1(2000),  /* chart top9 ≈ 5.1 M SEK; correct c */
   q2: makeQ2(2000),           /* 7.17 B / 31.87 M ≈ 225×; correct c */
 };
 const C1_BAR_SUPER = {
@@ -192,7 +193,7 @@ const C1_BAR_SUPER = {
   phase: "Part 1 — Bar × Superposition", questionType: "Bar chart",
   vizConfig: { representation: "bar", comparison: "superposition", metric: "wealth", popEncoding: "without", years: "1990", yScale: "linear-zoom" },
   taskText: "This <strong>BAR CHART</strong> shows <strong>1990</strong> data with all groups <strong>overlaid</strong> on one axis (superposition). Use the zoom slider to explore before answering.",
-  q1: makeQ1(1990, 1513233),  /* threshold ≈ 1.5 M SEK; correct c */
+  q1: makeQ1(1990),  /* chart top9 ≈ 3.1 M SEK; correct c */
   q2: makeQ2(1990),           /* 3.91 B / 18.63 M ≈ 210×; correct c */
 };
 const C1_BAR_ANIM = {
@@ -364,6 +365,16 @@ function lockControls() {
   if (playBtn) playBtn.disabled = true;
   document.querySelector(".cwi-controls-bar")?.style.setProperty("opacity","0.45");
   document.getElementById("cwi-yscale-ctrl")?.style.setProperty("opacity","0.45");
+  // Glass pane: block all mouse events on the render area (prevents tooltips/hover)
+  const root = document.getElementById("cwi-render-root");
+  if (root && !document.getElementById("cwi-interaction-blocker")) {
+    const pane = document.createElement("div");
+    pane.id = "cwi-interaction-blocker";
+    pane.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;cursor:default;";
+    root.style.position = "relative";
+    root.appendChild(pane);
+  }
+  document.getElementById("cwi-tooltip")?.style.setProperty("display","none");
 }
 
 function unlockControls() {
@@ -374,6 +385,7 @@ function unlockControls() {
   if (playBtn) playBtn.disabled = false;
   document.querySelector(".cwi-controls-bar")?.style.removeProperty("opacity");
   document.getElementById("cwi-yscale-ctrl")?.style.removeProperty("opacity");
+  document.getElementById("cwi-interaction-blocker")?.remove();
 }
 
 /* ══════════════════════════════════════════════════════════════
