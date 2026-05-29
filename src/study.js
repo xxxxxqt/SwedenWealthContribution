@@ -365,16 +365,18 @@ function lockControls() {
   if (playBtn) playBtn.disabled = true;
   document.querySelector(".cwi-controls-bar")?.style.setProperty("opacity","0.45");
   document.getElementById("cwi-yscale-ctrl")?.style.setProperty("opacity","0.45");
-  // Glass pane: block all mouse events on the render area (prevents tooltips/hover)
+  // Glass pane that survives chart re-renders (e.g. zoom slider): use MutationObserver
+  // to re-add the blocker div whenever the render root is cleared and rebuilt.
   const root = document.getElementById("cwi-render-root");
-  if (root && !document.getElementById("cwi-interaction-blocker")) {
-    const pane = document.createElement("div");
-    pane.id = "cwi-interaction-blocker";
-    pane.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;cursor:default;";
+  if (root) {
     root.style.position = "relative";
-    root.appendChild(pane);
+    root._studyLocked = true;
+    if (!_blockerObserver) {
+      _blockerObserver = new MutationObserver(_ensureBlocker);
+      _blockerObserver.observe(root, { childList: true });
+    }
+    _ensureBlocker();
   }
-  document.getElementById("cwi-tooltip")?.style.setProperty("display","none");
 }
 
 function unlockControls() {
@@ -385,7 +387,11 @@ function unlockControls() {
   if (playBtn) playBtn.disabled = false;
   document.querySelector(".cwi-controls-bar")?.style.removeProperty("opacity");
   document.getElementById("cwi-yscale-ctrl")?.style.removeProperty("opacity");
+  if (_blockerObserver) { _blockerObserver.disconnect(); _blockerObserver = null; }
+  const root = document.getElementById("cwi-render-root");
+  if (root) root._studyLocked = false;
   document.getElementById("cwi-interaction-blocker")?.remove();
+  document.getElementById("cwi-tooltip")?.style.removeProperty("display");
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -764,6 +770,19 @@ function wireTask(step, banner) {
 
 /* ── Timer ───────────────────────────────────────────────────── */
 let _timerInterval = null;
+let _blockerObserver = null;
+
+function _ensureBlocker() {
+  const root = document.getElementById("cwi-render-root");
+  if (!root || !root._studyLocked) return;
+  if (!document.getElementById("cwi-interaction-blocker")) {
+    const pane = document.createElement("div");
+    pane.id = "cwi-interaction-blocker";
+    pane.style.cssText = "position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;cursor:default;";
+    root.appendChild(pane);
+  }
+  document.getElementById("cwi-tooltip")?.style.setProperty("display","none");
+}
 function startTaskTimer(banner, t0) {
   if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
   const lbl = banner.querySelector("#task-timer-label");
