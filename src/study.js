@@ -311,7 +311,113 @@ const C2_COMPARE = {
   correct: "d", /* 18.9 B / 3.47 M ≈ 5 440× */
 };
 
-/* ── Unified step sequence (both parts, linear flow) ─────────── */
+/* ══════════════════════════════════════════════════════════════
+   PART 3: Wealth vs. Income Inequality Perception
+   Q1–Q4 shown TWICE (pre-test before viz, post-test after viz).
+   Q5–Q8 shown ONCE after the visualization.
+   Reference anchors: Bottom 50% avg wealth 1980 ≈ 166,000 SEK.
+══════════════════════════════════════════════════════════════ */
+const C3_BOTH_VIZ = { representation: "line", comparison: "juxtaposition", metric: "both", popEncoding: "without", years: "1980,1990,2000,2010,2020,2024", yScale: "linear-zoom" };
+
+const C3_INTRO = {
+  id: "c3_intro", type: "info",
+  title: "Part 3 — Wealth vs. Income Inequality",
+  content: `
+    <p>In this final part you will first answer some estimation questions, then explore a visualization showing <strong>both wealth and income</strong> for Sweden, and answer the same questions again to see how your estimates change.</p>
+    <h3 style="margin-top:16px;font-size:15px">Definitions</h3>
+    <p><strong>Income:</strong> Total after-tax income received each month — wages, self-employment, government transfers (pensions, welfare), and investment income.</p>
+    <p><strong>Wealth:</strong> Total value of all assets accumulated over time <em>minus</em> debt. Assets include real estate, cars, savings, stocks, and pensions. When two individuals jointly own an asset, each is credited half.</p>
+    <p>Answer based on your current knowledge — there are no wrong answers, only honest ones.</p>`,
+  nextLabel: "Start pre-test questions →",
+};
+
+const C3_PRE_Q12 = {
+  id: "c3_pre_q12", type: "estimate",
+  phase: "Part 3 — Pre-test", title: "Before seeing the chart: Income & Wealth Shares",
+  questions: [
+    { id: "q1", type: "pct",
+      text: "Q1 — What percentage of total yearly income in Sweden do you think is earned by the top 1% of earners?" },
+    { id: "q2", type: "pct",
+      text: "Q2 — What percentage of total wealth in Sweden do you think is owned by the richest 10% of the population?" },
+  ],
+};
+
+const C3_PRE_Q34 = {
+  id: "c3_pre_q34", type: "estimate",
+  phase: "Part 3 — Pre-test", title: "Before seeing the chart: Wealth Estimates",
+  anchor: "Reference anchor: The average wealth of the Bottom 50% in 1980 was approximately <strong>166,000 SEK</strong>.",
+  questions: [
+    { id: "q3", type: "grid",
+      text: "Q3 — Estimate the average wealth (SEK) for each group and year:",
+      rows: [ { id: "top10", label: "Top 10%" }, { id: "bot50", label: "Bottom 50%" } ],
+      cols: ["1980", "2000", "2020"] },
+    { id: "q4", type: "multi_num",
+      text: "Q4 — Estimate how many times larger the Top 10%'s average wealth was compared with the Bottom 50%'s:",
+      fields: [ { id: "y1980", label: "In 1980" }, { id: "y2000", label: "In 2000" }, { id: "y2020", label: "In 2020" } ],
+      unit: "× times" },
+  ],
+};
+
+const C3_VIZ_INTRO = {
+  id: "c3_viz_intro", type: "task_explore",
+  phase: "Part 3 — Visualization",
+  title: "Explore the Wealth vs. Income Comparison",
+  content: `The chart now shows <strong>both average income (solid fill) and average wealth (dashed fill)</strong> per person for each group in Sweden from 1980 to 2024. Explore the panels freely — compare how income and wealth differ across groups and over time. When you are ready, click Continue.`,
+  vizConfig: C3_BOTH_VIZ,
+};
+
+const C3_POST_Q12 = {
+  id: "c3_post_q12", type: "task_estimate",
+  phase: "Part 3 — Post-test", questionType: "Wealth vs. Income",
+  vizConfig: C3_BOTH_VIZ,
+  taskText: "You have explored the visualization. Now answer the same two questions again — use the chart above to help you.",
+  questions: [
+    { id: "q1", type: "pct",
+      text: "Q1 — What percentage of total yearly income in Sweden is earned by the top 1% of earners?" },
+    { id: "q2", type: "pct",
+      text: "Q2 — What percentage of total wealth in Sweden is owned by the richest 10% of the population?" },
+  ],
+};
+
+const C3_POST_Q34 = {
+  id: "c3_post_q34", type: "task_estimate",
+  phase: "Part 3 — Post-test", questionType: "Wealth vs. Income",
+  vizConfig: C3_BOTH_VIZ,
+  taskText: "Using the chart above as reference, update your wealth estimates for the groups and years below.",
+  anchor: "Reference anchor: The average wealth of the Bottom 50% in 1980 was approximately <strong>166,000 SEK</strong>.",
+  questions: [
+    { id: "q3", type: "grid",
+      text: "Q3 — Estimate the average wealth (SEK) for each group and year:",
+      rows: [ { id: "top10", label: "Top 10%" }, { id: "bot50", label: "Bottom 50%" } ],
+      cols: ["1980", "2000", "2020"] },
+    { id: "q4", type: "multi_num",
+      text: "Q4 — Estimate how many times larger the Top 10%'s average wealth was compared with the Bottom 50%'s:",
+      fields: [ { id: "y1980", label: "In 1980" }, { id: "y2000", label: "In 2000" }, { id: "y2020", label: "In 2020" } ],
+      unit: "× times" },
+  ],
+};
+
+const C3_Q5678 = {
+  id: "c3_q5678", type: "task_estimate",
+  phase: "Part 3 — Perception", questionType: "Wealth vs. Income",
+  vizConfig: C3_BOTH_VIZ,
+  taskText: "Final questions about your perceptions of Swedish inequality.",
+  questions: [
+    { id: "q5", type: "distribution",
+      text: "Q5 — Estimate the percentage of Swedes in 2024 whose annual <em>wealth</em> falls into each bracket (must sum to 100%):",
+      buckets: [ { id: "neg", label: "Below 0 SEK (net debt)" }, { id: "mid", label: "0 – 2,000,000 SEK" }, { id: "high", label: "Above 2,000,000 SEK" } ] },
+    { id: "q6", type: "likert10",
+      text: "Q6 — How equally do you think <strong>income</strong> is distributed in Sweden?",
+      lo: "0 — Very equal", hi: "Very unequal — 10" },
+    { id: "q7", type: "likert10",
+      text: "Q7 — How equally do you think <strong>wealth</strong> is distributed in Sweden?",
+      lo: "0 — Very equal", hi: "Very unequal — 10" },
+    { id: "q8", type: "pct",
+      text: "Q8 — What share of total wealth do you think the top 10% <em>should ideally</em> hold?" },
+  ],
+};
+
+/* ── Unified step sequence (all three parts, linear flow) ─────── */
 const STEPS = [
   STEP_CONSENT,
   C1_INTRO,
@@ -320,6 +426,10 @@ const STEPS = [
   /* Part 1 — Bar */             C1_BAR_JUX, C1_BAR_SUPER, C1_BAR_ANIM, C1_BAR_RATE,
   C2_INTRO,
   /* Part 2 — Y-axis scales */   C2_V1, C2_V2, C2_V3, C2_V4, C2_COMPARE,
+  C3_INTRO,
+  /* Part 3 — Pre-test */        C3_PRE_Q12, C3_PRE_Q34,
+  /* Part 3 — Visualization */   C3_VIZ_INTRO,
+  /* Part 3 — Post-test */       C3_POST_Q12, C3_POST_Q34, C3_Q5678,
   STEP_COMPLETE,
 ];
 
@@ -426,11 +536,16 @@ function persist() {
    SUMMARY
 ══════════════════════════════════════════════════════════════ */
 function buildSummary() {
-  return STEPS.filter(s => ["task","task_combined","task_likert","task_2q"].includes(s.type)).map(t => {
+  return STEPS.filter(s => ["task","task_combined","task_likert","task_2q","task_estimate","estimate"].includes(s.type)).map(t => {
     const ans = state.answers[t.id] || {};
-    const base = { id: t.id, phase: t.phase, type: t.questionType };
+    const base = { id: t.id, phase: t.phase, type: t.questionType || t.title };
     if (!Object.keys(ans).length) return { ...base, answered: false };
     const timeFmt = ms => ms != null ? (ms/1000).toFixed(1) + "s" : "—";
+
+    if (t.type === "estimate" || t.type === "task_estimate") {
+      const fields = Object.entries(ans).filter(([k]) => k !== "totalMs").map(([k,v]) => `${k}: ${v}`).join(" | ");
+      return { ...base, answered: true, answer: fields, correct: null, totalSec: timeFmt(ans.totalMs) };
+    }
 
     if (t.type === "task_likert") {
       return { ...base, answered: true,
@@ -485,7 +600,7 @@ function render() {
   const overlay    = document.getElementById("study-overlay");
   const panel      = document.getElementById("study-panel");
   const taskBanner = document.getElementById("study-task-banner");
-  const isTask = ["task","task_combined","task_likert","task_2q"].includes(step.type);
+  const isTask = ["task","task_combined","task_likert","task_2q","task_estimate","task_explore"].includes(step.type);
   if (isTask) {
     overlay.classList.add("hidden");
     taskBanner.classList.remove("hidden");
@@ -493,12 +608,14 @@ function render() {
     if (step.autoPlay) {
       setTimeout(() => document.getElementById("cwi-race-play")?.click(), 300);
     }
-    lockControls();
+    if (step.type !== "task_explore") lockControls();
     renderTaskBanner(step, taskBanner);
   } else {
     taskBanner.classList.add("hidden");
     overlay.classList.remove("hidden");
+    unlockControls();
     if (step.type === "info")     renderInfo(step, panel);
+    if (step.type === "estimate") renderEstimate(step, panel);
     if (step.type === "complete") renderComplete(step, panel);
   }
   updateProgress();
@@ -537,7 +654,22 @@ function buildTaskHTML(step) {
   const ans   = state.answers[step.id] || {};
   const timer = `<span id="task-timer-label" style="display:none"></span>`;
 
+  /* task_explore: single-phase "explore and continue" banner */
+  if (step.type === "task_explore") {
+    return `<div class="task-banner-inner">
+      <div class="task-phase-tag">${step.phase}</div>
+      <p class="task-desc"><strong>${step.title}</strong> — ${step.content}</p>
+      <div class="task-banner-nav">
+        ${state.currentStep > 1 ? `<button class="study-btn secondary" id="task-back">← Back</button>` : ""}
+        <button class="study-btn primary" id="task-submit">I've explored the chart → Continue</button>
+      </div>
+    </div>`;
+  }
+
   if (taskPhase === "description") {
+    const readyLabel = step.type === "task_estimate"
+      ? "Show questions →"
+      : "I've examined the chart — show question →";
     return `<div class="task-banner-inner">
       <button class="study-close-btn" id="task-close-btn">✕</button>
       <div class="task-phase-tag">
@@ -546,7 +678,7 @@ function buildTaskHTML(step) {
       <p class="task-desc">${step.taskText}</p>
       <div class="task-banner-nav">
         ${state.currentStep > 1 ? `<button class="study-btn secondary" id="task-back">← Back</button>` : ""}
-        <button class="study-btn primary" id="task-ready">I've examined the chart — show question →</button>
+        <button class="study-btn primary" id="task-ready">${readyLabel}</button>
       </div>
     </div>`;
   }
@@ -669,6 +801,23 @@ function buildTaskHTML(step) {
       </div>
     </div>`;
   }
+  /* Free-form estimation form (C3 post-test with viz visible) */
+  if (step.type === "task_estimate") {
+    const saved = state.answers[step.id] || {};
+    const allFilled = step.questions.every(q => isEstimateFilled(q, saved));
+    return `<div class="task-banner-inner">
+      <button class="study-close-btn" id="task-close-btn">✕</button>
+      <div class="task-phase-tag">${step.phase} — ${step.questionType} ${timer}</div>
+      ${step.anchor ? `<div style="font-size:11px;color:#555;background:#f8f9fa;border-radius:4px;padding:5px 10px;margin-bottom:6px">${step.anchor}</div>` : ""}
+      <div class="task-estimate-form">
+        ${step.questions.map(q => buildEstimateQHTML(q, saved)).join(`<hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0">`)}
+      </div>
+      <div class="task-banner-nav" style="margin-top:8px">
+        <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
+        <button class="study-btn primary" id="task-submit" ${allFilled?"":"disabled"}>Submit →</button>
+      </div>
+    </div>`;
+  }
   return "";
 }
 
@@ -764,6 +913,14 @@ function wireTask(step, banner) {
       });
     });
   }
+  if (step.type === "task_explore") {
+    banner.querySelector("#task-back")?.addEventListener("click", () => retreat());
+    banner.querySelector("#task-submit")?.addEventListener("click", () => advance());
+    return;
+  }
+  if (step.type === "task_estimate") {
+    wireEstimateInputs(step, banner, true);
+  }
   banner.querySelector("#task-submit")?.addEventListener("click", () => { unlockControls(); advance(); });
   startTaskTimer(banner, state.stepTimes[step.id]);
 }
@@ -792,6 +949,141 @@ function startTaskTimer(banner, t0) {
     if (!lbl.isConnected) { clearInterval(_timerInterval); return; }
     lbl.textContent = `⏱ ${((Date.now()-start)/1000).toFixed(0)} s`;
   }, 500);
+}
+
+/* ── C3 estimate helpers ─────────────────────────────────────── */
+
+function isEstimateFilled(q, saved) {
+  if (q.type === "pct") return saved[q.id] != null && saved[q.id] !== "";
+  if (q.type === "grid")
+    return q.rows.every(r => q.cols.every(c => { const k = `${q.id}_${r.id}_${c}`; return saved[k] != null && saved[k] !== ""; }));
+  if (q.type === "multi_num")
+    return q.fields.every(f => { const k = `${q.id}_${f.id}`; return saved[k] != null && saved[k] !== ""; });
+  if (q.type === "distribution") {
+    if (!q.buckets.every(b => { const k = `${q.id}_${b.id}`; return saved[k] != null && saved[k] !== ""; })) return false;
+    const sum = q.buckets.reduce((s, b) => s + (Number(saved[`${q.id}_${b.id}`]) || 0), 0);
+    return Math.abs(sum - 100) < 0.5;
+  }
+  if (q.type === "likert10") return saved[q.id] != null;
+  return false;
+}
+
+function buildEstimateQHTML(q, saved) {
+  const v = k => saved[k] ?? "";
+  if (q.type === "pct") {
+    return `<p class="estimate-q-text">${q.text}</p>
+      <div class="estimate-field-row">
+        <input type="number" id="eq_${q.id}" class="estimate-input" min="0" max="100" step="0.1" value="${v(q.id)}" placeholder="0–100">
+        <span class="estimate-unit">%</span>
+      </div>`;
+  }
+  if (q.type === "grid") {
+    return `<p class="estimate-q-text">${q.text}</p>
+      <table class="estimate-grid">
+        <thead><tr><th></th>${q.cols.map(c => `<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${q.rows.map(r => `
+          <tr><td><strong>${r.label}</strong></td>
+            ${q.cols.map(c => { const k = `${q.id}_${r.id}_${c}`; return `<td><input type="number" id="eq_${k}" class="estimate-input" step="1000" value="${v(k)}" placeholder="SEK"> <span class="estimate-unit" style="font-size:10px">SEK</span></td>`; }).join("")}
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
+  }
+  if (q.type === "multi_num") {
+    return `<p class="estimate-q-text">${q.text}</p>
+      <div class="estimate-multi">
+        ${q.fields.map(f => { const k = `${q.id}_${f.id}`; return `
+          <div class="estimate-field-row">
+            <label class="estimate-field-label">${f.label}:</label>
+            <input type="number" id="eq_${k}" class="estimate-input" min="0" step="0.1" value="${v(k)}" placeholder="e.g. 5">
+            <span class="estimate-unit">${q.unit || ""}</span>
+          </div>`; }).join("")}
+      </div>`;
+  }
+  if (q.type === "distribution") {
+    const sum = q.buckets.reduce((s, b) => s + (Number(v(`${q.id}_${b.id}`)) || 0), 0);
+    const ok  = Math.abs(sum - 100) < 0.5;
+    return `<p class="estimate-q-text">${q.text}</p>
+      <div class="estimate-multi">
+        ${q.buckets.map(b => { const k = `${q.id}_${b.id}`; return `
+          <div class="estimate-field-row">
+            <label class="estimate-field-label" style="min-width:220px">${b.label}:</label>
+            <input type="number" id="eq_${k}" class="estimate-input" min="0" max="100" step="1" value="${v(k)}" placeholder="0–100">
+            <span class="estimate-unit">%</span>
+          </div>`; }).join("")}
+        <div id="dist-sum-${q.id}" style="font-size:12px;margin-top:4px;color:${ok?"#2d6a4f":"#c0392b"}">
+          Sum: ${sum.toFixed(0)}% ${ok ? "✓" : "(must equal 100%)"}
+        </div>
+      </div>`;
+  }
+  if (q.type === "likert10") {
+    const sv = saved[q.id];
+    return `<p class="estimate-q-text">${q.text}</p>
+      <div class="task-likert-scale" style="flex-wrap:wrap;gap:2px">
+        <span class="likert-end">${q.lo || "0 — Very equal"}</span>
+        ${[0,1,2,3,4,5,6,7,8,9,10].map(n => `
+          <label class="likert-cell ${String(sv)===String(n)?"sel":""}">
+            <input type="radio" name="eq_${q.id}" value="${n}" ${String(sv)===String(n)?"checked":""}/>
+            <span>${n}</span>
+          </label>`).join("")}
+        <span class="likert-end">${q.hi || "Very unequal — 10"}</span>
+      </div>`;
+  }
+  return "";
+}
+
+function wireEstimateInputs(step, container, isTask) {
+  const checkAll = () => {
+    const saved = state.answers[step.id] || {};
+    const done = step.questions.every(q => isEstimateFilled(q, saved));
+    const btn = container.querySelector("#" + (isTask ? "task-submit" : "study-next"));
+    if (btn) btn.disabled = !done;
+  };
+  container.querySelectorAll(".estimate-input").forEach(input => {
+    const key = input.id.replace("eq_", "");
+    const restore = () => { if (input.value !== "") saveSubAnswer(step.id, key, input.value); };
+    restore();
+    input.addEventListener("input", () => {
+      saveSubAnswer(step.id, key, input.value);
+      // refresh distribution sum label if needed
+      const q = step.questions.find(q => q.type === "distribution" && input.id.startsWith(`eq_${q.id}_`));
+      if (q) {
+        const saved = state.answers[step.id] || {};
+        const sum = q.buckets.reduce((s, b) => s + (Number(saved[`${q.id}_${b.id}`]) || 0), 0);
+        const ok  = Math.abs(sum - 100) < 0.5;
+        const lbl = container.querySelector(`#dist-sum-${q.id}`);
+        if (lbl) { lbl.textContent = `Sum: ${sum.toFixed(0)}% ${ok ? "✓" : "(must equal 100%)"}`; lbl.style.color = ok ? "#2d6a4f" : "#c0392b"; }
+      }
+      checkAll();
+    });
+  });
+  container.querySelectorAll("[name^='eq_']").forEach(radio => {
+    const key = radio.name.replace("eq_", "");
+    radio.addEventListener("change", () => {
+      container.querySelectorAll(`[name="${radio.name}"]`).forEach(r => r.closest(".likert-cell")?.classList.remove("sel"));
+      radio.closest(".likert-cell")?.classList.add("sel");
+      saveSubAnswer(step.id, key, radio.value);
+      checkAll();
+    });
+  });
+  checkAll();
+}
+
+function renderEstimate(step, panel) {
+  const saved = state.answers[step.id] || {};
+  panel.innerHTML = `
+    <div class="study-phase-tag">${step.phase || "Estimation"}</div>
+    <h2 class="study-title">${step.title}</h2>
+    ${step.anchor ? `<div class="study-anchor" style="font-size:13px;background:#f0f4ff;border-left:3px solid #4c6ef5;padding:8px 12px;margin:8px 0;border-radius:4px">${step.anchor}</div>` : ""}
+    <div class="study-body" style="max-height:60vh;overflow-y:auto">
+      ${step.questions.map(q => `<div style="margin-bottom:16px">${buildEstimateQHTML(q, saved)}</div>`).join("")}
+    </div>
+    <div class="study-nav">
+      ${state.currentStep > 0 ? `<button class="study-btn secondary" id="study-prev">← Back</button>` : ""}
+      <button class="study-btn primary" id="study-next" disabled>Next →</button>
+    </div>`;
+  wireEstimateInputs(step, panel, false);
+  panel.querySelector("#study-prev")?.addEventListener("click", retreat);
+  panel.querySelector("#study-next")?.addEventListener("click", advance);
 }
 
 /* ── Complete ────────────────────────────────────────────────── */
