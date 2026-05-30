@@ -471,8 +471,6 @@ function lockControls() {
   ["cwi-representation","cwi-comparison","cwi-metric","cwi-pop-encoding","cwi-years-input"]
     .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
   document.querySelectorAll("[name='cwiYScale']").forEach(el => el.disabled = true);
-  const playBtn = document.getElementById("cwi-race-play");
-  if (playBtn) playBtn.disabled = true;
   document.querySelector(".cwi-controls-bar")?.style.setProperty("opacity","0.45");
   document.getElementById("cwi-yscale-ctrl")?.style.setProperty("opacity","0.45");
   // Glass pane that survives chart re-renders (e.g. zoom slider): use MutationObserver
@@ -493,8 +491,6 @@ function unlockControls() {
   ["cwi-representation","cwi-comparison","cwi-metric","cwi-pop-encoding","cwi-years-input"]
     .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = false; });
   document.querySelectorAll("[name='cwiYScale']").forEach(el => el.disabled = false);
-  const playBtn = document.getElementById("cwi-race-play");
-  if (playBtn) playBtn.disabled = false;
   document.querySelector(".cwi-controls-bar")?.style.removeProperty("opacity");
   document.getElementById("cwi-yscale-ctrl")?.style.removeProperty("opacity");
   if (_blockerObserver) { _blockerObserver.disconnect(); _blockerObserver = null; }
