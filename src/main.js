@@ -4333,7 +4333,7 @@ function cwiLineTicks(yMin, yMax) {
 
 // Small-multiples helper: shared Y domain, clean explicit symlog ticks
 // Linear Y axis — shares the same [yMin, yMax] viewport as the superposition view.
-function cwiMatrixDrawGroupLines(svgNode, group, metrics, popEncoded, highlightYears, yDomain, isOverride) {
+function cwiMatrixDrawGroupLines(svgNode, group, metrics, popEncoded, highlightYears, yDomain, isOverride, yScaleType = "linear") {
   const svg = d3.select(svgNode);
   const width = 400, height = 250;
   const margin = { top: 14, right: 58, bottom: 30, left: 70 };
@@ -4343,14 +4343,18 @@ function cwiMatrixDrawGroupLines(svgNode, group, metrics, popEncoded, highlightY
   const x = d3.scaleLinear().domain(d3.extent(allYears)).range([0, innerW]);
 
   const [rawMin, rawMax] = yDomain;
-  // When no override, add small breathing room; when override, use exact values
-  const yMin = isOverride ? rawMin : Math.min(0, rawMin);
-  const yMax = isOverride ? rawMax : rawMax * 1.08;
-  const hasNeg = yMin < 0;
-
-  // Always linear
-  const y = d3.scaleLinear().domain([yMin, yMax]).range([innerH, 0]);
-  const yTicks = y.ticks(4);
+  let y, yTicks, hasNeg;
+  if (yScaleType === "log") {
+    y = d3.scaleLog().domain([Math.max(1, rawMin), rawMax]).range([innerH, 0]).clamp(true);
+    yTicks = cwiLogTicks(y);
+    hasNeg = false;
+  } else {
+    const yMin = isOverride ? rawMin : Math.min(0, rawMin);
+    const yMax = isOverride ? rawMax : rawMax * 1.08;
+    hasNeg = yMin < 0;
+    y = d3.scaleLinear().domain([yMin, yMax]).range([innerH, 0]);
+    yTicks = y.ticks(4);
+  }
 
   svg.attr("class", "cwi-svg").attr("viewBox", `0 0 ${width} ${height}`);
   svg.selectAll("*").remove();
@@ -4380,7 +4384,7 @@ function cwiMatrixDrawGroupLines(svgNode, group, metrics, popEncoded, highlightY
   metrics.forEach((metric, mi) => {
     const data = cwiMatrixSeries(metric);
     const lineGen = d3.line()
-      .defined((d) => Number.isFinite(cwiMatrixMetricValue(d, group, popEncoded)))
+      .defined((d) => { const v = cwiMatrixMetricValue(d, group, popEncoded); return Number.isFinite(v) && (yScaleType !== "log" || v > 0); })
       .x((d) => x(d.year)).y((d) => y(cwiMatrixMetricValue(d, group, popEncoded)));
     g.append("path").datum(data).attr("fill", "none")
       .attr("stroke", group.color).attr("stroke-width", sw)
@@ -4565,6 +4569,68 @@ function cwiMatrixDrawLines(svgNode, metric, popEncoded, highlightYears, yDomain
       .on("mouseleave", () => { guide.style("display", "none"); tooltip.style("display", "none"); });
     return;
   }
+  // ── Logarithmic scale mode ─────────────────────────────────────────
+  if (yScaleType === "log") {
+    const posVals = allValues.filter((v) => Number.isFinite(v) && v > 0);
+    const posMin = posVals.length ? Math.min(...posVals) * 0.5 : 1;
+    const allTimeMax = d3.max(
+      cwiMatrixSeries(metric).flatMap((row) =>
+        CWI_MATRIX_GROUPS.map((g) => cwiMatrixMetricValue(row, g, popEncoded))
+      ).filter((v) => v > 0)
+    ) || dataMax;
+    const domainMax = Math.pow(10, Math.ceil(Math.log10(allTimeMax)));
+    const x = d3.scaleLinear().domain(d3.extent(data, (d) => d.year)).range([0, innerW]);
+    const y = d3.scaleLog().domain([Math.max(1, posMin), domainMax]).range([innerH, 0]).clamp(true);
+    svg.attr("class", "cwi-svg").attr("viewBox", `0 0 ${width} ${height}`);
+    svg.selectAll("*").remove();
+    const defs = svg.append("defs");
+    const clipId = `clip-log-ln-${metric}-${Math.random().toString(36).slice(2)}`;
+    defs.append("clipPath").attr("id", clipId).append("rect").attr("width", innerW).attr("height", innerH);
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).tickFormat(d3.format("d")));
+    g.append("g").call(d3.axisLeft(y).tickValues(cwiLogTicks(y)).tickFormat(fmtSEKAxis));
+    g.selectAll(".year-mark").data(highlightYears).join("line").attr("class", "year-mark")
+      .attr("x1", (d) => x(d)).attr("x2", (d) => x(d)).attr("y1", 0).attr("y2", innerH).attr("stroke", "#f1f3f5");
+    const linesG = g.append("g").attr("clip-path", `url(#${clipId})`);
+    CWI_MATRIX_GROUPS.forEach((group) => {
+      const lineGen = d3.line()
+        .defined((d) => { const v = cwiMatrixMetricValue(d, group, popEncoded); return Number.isFinite(v) && v > 0; })
+        .x((d) => x(d.year)).y((d) => y(cwiMatrixMetricValue(d, group, popEncoded)));
+      linesG.append("path").datum(data).attr("fill", "none").attr("stroke", group.color)
+        .attr("stroke-width", popEncoded ? cwiPopWidthFixed(group.pop) : 2).attr("d", lineGen);
+      const last = data[data.length - 1];
+      const lastVal = cwiMatrixMetricValue(last, group, popEncoded);
+      if (Number.isFinite(lastVal) && lastVal > 0)
+        g.append("text").attr("x", innerW + 5).attr("y", y(lastVal)).attr("dy", "0.35em")
+          .attr("font-size", 10).attr("fill", group.color).text(group.label);
+    });
+    const tooltip = d3.select("#cwi-tooltip");
+    const bisect  = d3.bisector((d) => d.year).left;
+    const guide   = g.append("line").attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", innerH)
+      .attr("stroke", "#6c757d").attr("stroke-dasharray", "3 3").attr("pointer-events", "none").style("display", "none");
+    g.append("rect").attr("width", innerW).attr("height", innerH)
+      .attr("fill", "none").style("pointer-events", "all").style("cursor", "crosshair")
+      .on("mousemove", (event) => {
+        const [mx] = d3.pointer(event);
+        const xVal = x.invert(mx);
+        const i  = bisect(data, xVal);
+        const d0 = data[Math.max(0, i - 1)];
+        const d1 = data[Math.min(data.length - 1, i)];
+        const row = (d1 && Math.abs(xVal - d1.year) < Math.abs(xVal - d0.year)) ? d1 : d0;
+        if (!row) return;
+        guide.attr("x1", x(row.year)).attr("x2", x(row.year)).style("display", null);
+        const html = `<strong>${row.year}</strong><br>` +
+          CWI_MATRIX_GROUPS.map((grp) => {
+            const v = cwiMatrixMetricValue(row, grp, popEncoded);
+            return `<span style="color:${grp.color}">${grp.label}</span>: ${Number.isFinite(v) && v > 0 ? fmtSEKAxis(v) : "≤ 0 (not on log scale)"}`;
+          }).join("<br>");
+        tooltip.html(html).style("display", "block")
+          .style("left", (event.clientX + 16) + "px").style("top", (event.clientY - 60) + "px");
+      })
+      .on("mouseleave", () => { guide.style("display", "none"); tooltip.style("display", "none"); });
+    return;
+  }
+
   // ── Linear scale mode (existing code below) ──────────────────────
 
   // Viewport: override or natural full range
@@ -4667,11 +4733,21 @@ function cwiMatrixRenderLines(root, years, comparison, popEncoded, metrics, yDom
     const dataMin = d3.min(allVals);
     const dataMax = d3.max(allVals);
     // Apply user overrides for the shared Y domain
-    const isOv = yDomainOverride?.min != null || yDomainOverride?.max != null;
-    const yDomain = [
-      yDomainOverride?.min != null ? yDomainOverride.min : dataMin,
-      yDomainOverride?.max != null ? yDomainOverride.max : dataMax
-    ];
+    let isOv, yDomain;
+    if (yScaleType === "log") {
+      const posVals = allVals.filter((v) => v > 0);
+      const posMin = posVals.length ? Math.min(...posVals) : 1;
+      const posMax = d3.max(posVals) || 1;
+      const domainMax = Math.pow(10, Math.ceil(Math.log10(posMax)));
+      yDomain = [Math.max(1, posMin * 0.8), domainMax];
+      isOv = true;
+    } else {
+      isOv = yDomainOverride?.min != null || yDomainOverride?.max != null;
+      yDomain = [
+        yDomainOverride?.min != null ? yDomainOverride.min : dataMin,
+        yDomainOverride?.max != null ? yDomainOverride.max : dataMax
+      ];
+    }
     if (metrics.length > 1) {
       const hint = document.createElement("p");
       hint.className = "cwi-note";
@@ -4685,7 +4761,7 @@ function cwiMatrixRenderLines(root, years, comparison, popEncoded, metrics, yDom
       const card = cwiMatrixMakeCard(grid, group.label);
       const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       card.appendChild(svg);
-      cwiMatrixDrawGroupLines(svg, group, metrics, popEncoded, years, yDomain, isOv);
+      cwiMatrixDrawGroupLines(svg, group, metrics, popEncoded, years, yDomain, isOv, yScaleType);
     });
     return;
   }
@@ -5391,11 +5467,7 @@ function initCompareWI() {
     // Y-axis scale selector: line and bar charts
     if (rep === "line" || rep === "bar") {
       yscaleCtrl.classList.remove("hidden");
-      if (yscaleLogOpt) yscaleLogOpt.style.display = (rep === "bar") ? "" : "none";
-      if (rep === "line" && yScaleType === "log") {
-        yScaleType = "linear-zoom";
-        if (yscaleLinearZoom) yscaleLinearZoom.checked = true;
-      }
+      if (yscaleLogOpt) yscaleLogOpt.style.display = (rep === "bar" || rep === "line") ? "" : "none";
     } else {
       yscaleCtrl.classList.add("hidden");
       yScaleType = "linear-zoom";
