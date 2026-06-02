@@ -4342,6 +4342,76 @@ function cwiMatrixDrawGroupLines(svgNode, group, metrics, popEncoded, highlightY
   const allYears = cwiMatrixCommonYears();
   const x = d3.scaleLinear().domain(d3.extent(allYears)).range([0, innerW]);
 
+  // ── Scale break ──────────────────────────────────────────────────
+  if (yScaleType === "break") {
+    const refData   = cwiMatrixSeries(metrics[0]);
+    const secondGrp = CWI_MATRIX_GROUPS[CWI_MATRIX_GROUPS.length - 2]; // Top 0.01%
+    const secondMax = d3.max(refData, row => { const v = cwiMatrixMetricValue(row, secondGrp, popEncoded); return Number.isFinite(v) ? v : -Infinity; });
+    const [rawMin, rawMax] = yDomain;
+    const breakLow  = Math.max(0, secondMax) * 1.15;
+    const breakHigh = Math.max(0, secondMax) * 1.80;
+    const yMinFull  = Math.min(0, rawMin);
+    const yMaxFull  = rawMax * 1.05;
+    const breakPx = 14;
+    const splitY  = Math.round(innerH * 0.62);
+    const yLo = d3.scaleLinear().domain([yMinFull, breakLow]).range([innerH, splitY + Math.ceil(breakPx / 2)]);
+    const yHi = d3.scaleLinear().domain([breakHigh, yMaxFull]).range([splitY - Math.floor(breakPx / 2), 0]);
+    const yMap = (v) => {
+      if (!Number.isFinite(v)) return null;
+      if (v <= breakLow)  return yLo(Math.max(yMinFull, Math.min(breakLow, v)));
+      if (v >= breakHigh) return yHi(Math.max(breakHigh, Math.min(yMaxFull, v)));
+      return null;
+    };
+    svg.attr("class", "cwi-svg").attr("viewBox", `0 0 ${width} ${height}`);
+    svg.selectAll("*").remove();
+    const defs = svg.append("defs");
+    const loId = `gl-lo-${group.key}-${Math.random().toString(36).slice(2)}`;
+    const hiId = `gl-hi-${group.key}-${Math.random().toString(36).slice(2)}`;
+    defs.append("clipPath").attr("id", loId).append("rect").attr("x", 0).attr("y", splitY + Math.ceil(breakPx / 2)).attr("width", innerW).attr("height", innerH - splitY - Math.ceil(breakPx / 2));
+    defs.append("clipPath").attr("id", hiId).append("rect").attr("x", 0).attr("y", 0).attr("width", innerW).attr("height", splitY - Math.floor(breakPx / 2));
+    const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+    g.append("g").attr("transform", `translate(0,${innerH})`).call(d3.axisBottom(x).ticks(5).tickFormat(d3.format("d"))).call(ax => ax.selectAll("text").attr("font-size", 10));
+    g.append("g").call(d3.axisLeft(yLo).ticks(3).tickFormat(fmtSEKAxis)).call(ax => ax.select(".domain").remove()).call(ax => ax.selectAll("text").attr("font-size", 10));
+    g.append("g").call(d3.axisLeft(yHi).ticks(2).tickFormat(fmtSEKAxis)).call(ax => ax.select(".domain").remove()).call(ax => ax.selectAll("text").attr("font-size", 10));
+    g.append("line").attr("x1", 0).attr("x2", 0).attr("y1", 0).attr("y2", splitY - Math.floor(breakPx / 2)).attr("stroke", "#495057").attr("stroke-width", 1.5);
+    g.append("line").attr("x1", 0).attr("x2", 0).attr("y1", splitY + Math.ceil(breakPx / 2)).attr("y2", innerH).attr("stroke", "#495057").attr("stroke-width", 1.5);
+    const z1 = [-8,0,8,0,-8].map((dx,i) => `${dx},${splitY-5+i*2.5}`).join(" ");
+    const z2 = [-8,0,8,0,-8].map((dx,i) => `${dx},${splitY+1+i*2.5}`).join(" ");
+    g.append("polyline").attr("points", z1).attr("fill","none").attr("stroke","#868e96").attr("stroke-width",1.5).attr("stroke-linecap","round");
+    g.append("polyline").attr("points", z2).attr("fill","none").attr("stroke","#868e96").attr("stroke-width",1.5).attr("stroke-linecap","round");
+    if (yMinFull < 0) { const zy = yLo(0); if (zy > splitY && zy <= innerH) g.append("line").attr("x1",0).attr("x2",innerW).attr("y1",zy).attr("y2",zy).attr("stroke","#adb5bd").attr("stroke-dasharray","4 3"); }
+    g.selectAll(".yr-mark").data(highlightYears).join("line").attr("class","yr-mark").attr("x1",d=>x(d)).attr("x2",d=>x(d)).attr("y1",0).attr("y2",innerH).attr("stroke","#dee2e6").attr("stroke-width",1.5);
+    const sw = popEncoded ? cwiPopWidthFixed(group.pop) : 1.8;
+    metrics.forEach((metric, mi) => {
+      const data = cwiMatrixSeries(metric);
+      const dash = mi === 1 ? "5 3" : null;
+      const loLine = d3.line().defined(d => { const v = cwiMatrixMetricValue(d, group, popEncoded); return Number.isFinite(v) && v <= breakLow; }).x(d=>x(d.year)).y(d=>yLo(cwiMatrixMetricValue(d,group,popEncoded)));
+      const hiLine = d3.line().defined(d => { const v = cwiMatrixMetricValue(d, group, popEncoded); return Number.isFinite(v) && v >= breakHigh; }).x(d=>x(d.year)).y(d=>yHi(cwiMatrixMetricValue(d,group,popEncoded)));
+      g.append("path").datum(data).attr("fill","none").attr("stroke",group.color).attr("stroke-width",sw).attr("stroke-dasharray",dash).attr("d",loLine).attr("clip-path",`url(#${loId})`);
+      g.append("path").datum(data).attr("fill","none").attr("stroke",group.color).attr("stroke-width",sw).attr("stroke-dasharray",dash).attr("d",hiLine).attr("clip-path",`url(#${hiId})`);
+    });
+    const lastRow = cwiMatrixSeries(metrics[0]).at(-1);
+    if (lastRow) { const v = cwiMatrixMetricValue(lastRow, group, popEncoded); const ly = yMap(v); if (ly !== null) g.append("text").attr("x",innerW+4).attr("y",ly).attr("dy","0.35em").attr("font-size",10).attr("fill",group.color).text(fmtSEKAxis(v)); }
+    const tip2   = d3.select("#cwi-tooltip");
+    const allD   = cwiMatrixSeries(metrics[0]);
+    const bis2   = d3.bisector(d=>d.year).left;
+    const guide2 = g.append("line").attr("x1",0).attr("x2",0).attr("y1",0).attr("y2",innerH).attr("stroke","#6c757d").attr("stroke-dasharray","3 3").attr("pointer-events","none").style("display","none");
+    g.append("rect").attr("width",innerW).attr("height",innerH).attr("fill","none").style("pointer-events","all").style("cursor","crosshair")
+      .on("mousemove", event => {
+        const [mx] = d3.pointer(event);
+        const xVal = x.invert(mx);
+        const i = bis2(allD, xVal);
+        const d0 = allD[Math.max(0, i-1)], d1 = allD[Math.min(allD.length-1, i)];
+        const row = (d1 && Math.abs(xVal-d1.year) < Math.abs(xVal-d0.year)) ? d1 : d0;
+        if (!row) return;
+        guide2.attr("x1",x(row.year)).attr("x2",x(row.year)).style("display",null);
+        const lines = metrics.map(m => { const snap = cwiMatrixSeries(m).find(r=>r.year===row.year); const v = snap ? cwiMatrixMetricValue(snap,group,popEncoded) : null; return `${m}: ${v!=null?fmtSEKAxis(v):"n/a"}`; });
+        tip2.html(`<strong style="color:${group.color}">${group.label}</strong> · ${row.year}<br>${lines.join("<br>")}`).style("display","block").style("left",(event.clientX+16)+"px").style("top",(event.clientY-50)+"px");
+      })
+      .on("mouseleave", () => { guide2.style("display","none"); tip2.style("display","none"); });
+    return;
+  }
+
   const [rawMin, rawMax] = yDomain;
   let y, yTicks, hasNeg;
   if (yScaleType === "log") {
