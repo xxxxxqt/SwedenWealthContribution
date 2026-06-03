@@ -264,15 +264,14 @@ function makeBarStep(metric, yScale, comparison) {
 const Y_SCALES  = ["linear-zoom", "linear", "break", "log"];
 const POSITIONS = ["juxtaposition", "superposition"];
 
-const LINE_STEPS = [
-  ...Y_SCALES.flatMap(ys => POSITIONS.map(pos => makeLineStep("wealth",  ys, pos))),
-  ...Y_SCALES.flatMap(ys => POSITIONS.map(pos => makeLineStep("income",  ys, pos))),
-];
+/* Order: for each Y-axis type → for each position → income then wealth */
+const LINE_STEPS = Y_SCALES.flatMap(ys =>
+  POSITIONS.flatMap(pos => ["income", "wealth"].map(m => makeLineStep(m, ys, pos)))
+);
 
-const BAR_STEPS = [
-  ...Y_SCALES.flatMap(ys => POSITIONS.map(pos => makeBarStep("wealth",  ys, pos))),
-  ...Y_SCALES.flatMap(ys => POSITIONS.map(pos => makeBarStep("income",  ys, pos))),
-];
+const BAR_STEPS = Y_SCALES.flatMap(ys =>
+  POSITIONS.flatMap(pos => ["income", "wealth"].map(m => makeBarStep(m, ys, pos)))
+);
 
 /* ── Final step sequence (built dynamically by group) ─────── */
 const STEPS = [
