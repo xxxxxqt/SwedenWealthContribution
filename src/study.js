@@ -2,24 +2,23 @@
    User Study — Wealth & Income Inequality Visualization
    Thesis: Kairui Li, Linköping University
 
-   TWO PARALLEL GROUPS (URL param ?group=line or ?group=bar):
-     Each group sees: TABLE → 8 wealth chart steps → 8 income chart steps
-     Each chart step: 2 positions × 4 Y-axis types → 2 questions each
-     Bookended by 2 Likert equality questions (pre + post)
+   PARTICIPANT-CHOSEN GROUPS:
+     Line chart group : 4 Y-axis × 2 positions × 2 metrics = 16 chart steps
+     Bar chart group  : 4 Y-axis × 3 positions × 2 metrics = 24 chart steps
+                        (bar adds "animation" as a 3rd comparison mode)
 
-   Total per participant: 2 + 2 + 32 + 2 = 38 response items
+   Each chart step has Q1 (estimation) + Q2 (magnitude ratio).
+   Bookended by 2 equality Likert questions (pre + post).
+   Total response items: line 38 · bar 54
    ============================================================ */
 
-const STUDY_VERSION = "10.0";
-const STORAGE_KEY   = "wealth-study-data-v10";
+const STUDY_VERSION = "10.1";
+const STORAGE_KEY   = "wealth-study-data-v10-1";
 
 const ONEDRIVE_REQUEST_URL = "https://1drv.ms/f/c/b440acd6517e9d8a/IgAXJfxK03yxSKR_DAq3UjdmAbPCMZVRrbTZJiKHk7NYb7Q?e=LHCxco";
 
-/* ── Group assignment from URL (?group=line or ?group=bar) ─── */
-const STUDY_GROUP = new URLSearchParams(window.location.search).get("group") === "bar" ? "bar" : "line";
-
 /* ══════════════════════════════════════════════════════════════
-   FIXED STEPS (consent + complete)
+   FIXED STEPS
 ══════════════════════════════════════════════════════════════ */
 const STEP_CONSENT = {
   id: "consent", type: "info",
@@ -35,6 +34,12 @@ const STEP_CONSENT = {
     </label>`,
   nextLabel: "Next →",
   requireConsent: true,
+};
+
+const STEP_GROUP_SELECT = {
+  id: "group_select", type: "group_select",
+  title: "Choose your chart type",
+  content: `<p>You will examine charts showing Swedish wealth and income data. Please choose which chart type you would like to work with:</p>`,
 };
 
 const STEP_COMPLETE = {
@@ -121,9 +126,7 @@ function makeQ1(year) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Q2 — WEALTH  (Top 0.001% ÷ Top 1% ratio)
-   Ratios: 1990≈210×, 2000≈225×, 2010≈305×, 2020≈226×, 2024≈282×
-   Correct always "c" (200× or more).
+   Q2 — WEALTH  (Top 0.001% ÷ Top 1% ratio, correct always "c")
 ══════════════════════════════════════════════════════════════ */
 function makeQ2(year) {
   return {
@@ -139,8 +142,8 @@ function makeQ2(year) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Q1 — INCOME  (Top 10% disjoint avg: (avg_top10×10 − avg_top1) / 9)
-   1980≈766K, 2000≈1.16M, 2010≈1.40M, 2020≈1.48M  SEK
+   Q1 — INCOME  (Top 10% disjoint avg)
+   1980≈766K, 1990≈886K, 2000≈1.16M, 2010≈1.40M, 2020≈1.48M, 2024≈1.55M
    Correct always "c".
 ══════════════════════════════════════════════════════════════ */
 function makeQ1Income(year) {
@@ -149,6 +152,12 @@ function makeQ1Income(year) {
       { label: "Around 200,000 SEK (≈ 2 × 10⁵)",        value: "a" },
       { label: "Around 500,000 SEK (≈ 5 × 10⁵)",        value: "b" },
       { label: "Around 800,000 SEK (≈ 8 × 10⁵)",        value: "c" },
+      { label: "Around 3 million SEK (≈ 3 × 10⁶)",      value: "d" },
+    ],
+    1990: [
+      { label: "Around 300,000 SEK (≈ 3 × 10⁵)",        value: "a" },
+      { label: "Around 600,000 SEK (≈ 6 × 10⁵)",        value: "b" },
+      { label: "Around 900,000 SEK (≈ 9 × 10⁵)",        value: "c" },
       { label: "Around 3 million SEK (≈ 3 × 10⁶)",      value: "d" },
     ],
     2000: [
@@ -169,6 +178,12 @@ function makeQ1Income(year) {
       { label: "Around 1.5 million SEK (≈ 1.5 × 10⁶)",  value: "c" },
       { label: "Around 7 million SEK (≈ 7 × 10⁶)",      value: "d" },
     ],
+    2024: [
+      { label: "Around 700,000 SEK (≈ 7 × 10⁵)",        value: "a" },
+      { label: "Around 1.1 million SEK (≈ 1.1 × 10⁶)",  value: "b" },
+      { label: "Around 1.6 million SEK (≈ 1.6 × 10⁶)",  value: "c" },
+      { label: "Around 6 million SEK (≈ 6 × 10⁶)",      value: "d" },
+    ],
   };
   return {
     text: `Q1 — Estimation: Based on the chart, approximately what was the average per-person <strong>income</strong> for the 'Top 10%' group in ${year}?`,
@@ -178,9 +193,7 @@ function makeQ1Income(year) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Q2 — INCOME  (Top 0.001% ÷ Top 1% ratio)
-   Ratios: 1980≈51×, 2000≈45×, 2010≈85×, 2020≈64×
-   Correct always "b" (50–100 times).
+   Q2 — INCOME  (Top 0.001% ÷ Top 1% ratio ≈ 45–85×, correct always "b")
 ══════════════════════════════════════════════════════════════ */
 function makeQ2Income(year) {
   return {
@@ -196,7 +209,7 @@ function makeQ2Income(year) {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   BASELINE TABLE  (wealth only, year 2024, same for both groups)
+   BASELINE TABLE
 ══════════════════════════════════════════════════════════════ */
 const STEP_TABLE = {
   id: "table_wealth", type: "task_2q",
@@ -204,21 +217,25 @@ const STEP_TABLE = {
   vizConfig: { representation: "table", comparison: "juxtaposition",
                metric: "wealth", popEncoding: "without", years: "2024" },
   taskText: "This <strong>TABLE</strong> shows the average net wealth per person (SEK) for six population groups in Sweden in <strong>2024</strong>. Read all values carefully before answering.",
-  q1: makeQ1(2024),   /* top9 ≈ 14.3 M; correct c */
-  q2: makeQ2(2024),   /* 24.5 B / 86.9 M ≈ 282×; correct c */
+  q1: makeQ1(2024),
+  q2: makeQ2(2024),
 };
 
 /* ══════════════════════════════════════════════════════════════
    CHART STEP FACTORIES
-   Wealth years: linear-zoom→2020, linear→2010, break→2000, log→1990
-   Income years: linear-zoom→1980, linear→2000, break→2010, log→2020
-   Within each (metric × Y-axis), both positions share the same year
-   so the Y-axis encoding is the only variable.
+   Jux/sup year assignments (same year for both positions per Y-axis type):
+     Wealth: linear-zoom→2020, linear→2010, break→2000, log→1990
+     Income: linear-zoom→1980, linear→2000, break→2010, log→2020
+   Animation year assignments (different year per Y-axis type to avoid carryover):
+     Wealth: linear-zoom→2024, linear→1980, break→2024, log→1980
+     Income: linear-zoom→2024, linear→1990, break→2024, log→1990
 ══════════════════════════════════════════════════════════════ */
 const ALL_YEARS = "1980,1990,2000,2010,2020,2024";
 
-const WEALTH_YEARS = { "linear-zoom": 2020, linear: 2010, break: 2000, log: 1990 };
-const INCOME_YEARS = { "linear-zoom": 1980, linear: 2000, break: 2010, log: 2020 };
+const WEALTH_YEARS      = { "linear-zoom": 2020, linear: 2010, break: 2000, log: 1990 };
+const INCOME_YEARS      = { "linear-zoom": 1980, linear: 2000, break: 2010, log: 2020 };
+const WEALTH_ANIM_YEARS = { "linear-zoom": 2024, linear: 1980, break: 2024, log: 1980 };
+const INCOME_ANIM_YEARS = { "linear-zoom": 2024, linear: 1990, break: 2024, log: 1990 };
 
 const YSCALE_LABELS = {
   "linear-zoom": "Linear + Zoom",
@@ -245,43 +262,64 @@ function makeLineStep(metric, yScale, comparison) {
 }
 
 function makeBarStep(metric, yScale, comparison) {
-  const year = metric === "wealth" ? WEALTH_YEARS[yScale] : INCOME_YEARS[yScale];
-  const pos  = comparison === "juxtaposition" ? "Juxtaposition" : "Superposition";
-  const mLbl = metric === "wealth" ? "Wealth" : "Income";
-  const id   = `bar_${metric[0]}_${yScale.replace(/-/g,"")}_${comparison.slice(0,3)}`;
-  return {
+  const isAnim = comparison === "animation";
+  const yearMap = isAnim
+    ? (metric === "wealth" ? WEALTH_ANIM_YEARS : INCOME_ANIM_YEARS)
+    : (metric === "wealth" ? WEALTH_YEARS       : INCOME_YEARS);
+  const year  = yearMap[yScale];
+  const mLbl  = metric === "wealth" ? "Wealth" : "Income";
+  const pos   = { juxtaposition: "Juxtaposition", superposition: "Superposition", animation: "Animation" }[comparison];
+  const id    = `bar_${metric[0]}_${yScale.replace(/-/g,"")}_${comparison.slice(0,3)}`;
+  const step = {
     id, type: "task_2q",
     phase: `${mLbl} — Bar Chart`,
     questionType: `${pos} · ${YSCALE_LABELS[yScale]}`,
     vizConfig: { representation: "bar", comparison, metric,
-                 popEncoding: "without", years: String(year), yScale },
-    taskText: `This <strong>BAR CHART</strong> shows average per-person <strong>${mLbl.toLowerCase()}</strong> for <strong>${year}</strong> with groups in <strong>${pos}</strong> and a <strong>${YSCALE_LABELS[yScale]}</strong> Y-axis. Use the zoom/scale controls to explore before answering.`,
-    q1: metric === "wealth" ? makeQ1(year)       : makeQ1Income(year),
-    q2: metric === "wealth" ? makeQ2(year)       : makeQ2Income(year),
+                 popEncoding: "without",
+                 years: isAnim ? ALL_YEARS : String(year),
+                 yScale },
+    taskText: isAnim
+      ? `Watch this <strong>ANIMATED BAR CHART</strong> cycling through years 1980 → 2024. The animation uses a <strong>${YSCALE_LABELS[yScale]}</strong> Y-axis. Pay attention to the <strong>${year}</strong> values before answering.`
+      : `This <strong>BAR CHART</strong> shows average per-person <strong>${mLbl.toLowerCase()}</strong> for <strong>${year}</strong> with groups in <strong>${pos}</strong> and a <strong>${YSCALE_LABELS[yScale]}</strong> Y-axis. Use the zoom/scale controls to explore before answering.`,
+    q1: metric === "wealth" ? makeQ1(year) : makeQ1Income(year),
+    q2: metric === "wealth" ? makeQ2(year) : makeQ2Income(year),
   };
+  if (isAnim) step.autoPlay = true;
+  return step;
 }
 
-const Y_SCALES  = ["linear-zoom", "linear", "break", "log"];
-const POSITIONS = ["juxtaposition", "superposition"];
+/* ══════════════════════════════════════════════════════════════
+   STEP ARRAYS
+   Order: Y-axis → position → income then wealth
+══════════════════════════════════════════════════════════════ */
+const Y_SCALES      = ["linear-zoom", "linear", "break", "log"];
+const POSITIONS     = ["juxtaposition", "superposition"];
+const BAR_POSITIONS = ["juxtaposition", "superposition", "animation"];
 
-/* Order: for each Y-axis type → for each position → income then wealth */
 const LINE_STEPS = Y_SCALES.flatMap(ys =>
   POSITIONS.flatMap(pos => ["income", "wealth"].map(m => makeLineStep(m, ys, pos)))
 );
 
 const BAR_STEPS = Y_SCALES.flatMap(ys =>
-  POSITIONS.flatMap(pos => ["income", "wealth"].map(m => makeBarStep(m, ys, pos)))
+  BAR_POSITIONS.flatMap(pos => ["income", "wealth"].map(m => makeBarStep(m, ys, pos)))
 );
 
-/* ── Final step sequence (built dynamically by group) ─────── */
-const STEPS = [
-  STEP_CONSENT,
-  PRE_LIKERT,
-  STEP_TABLE,
-  ...(STUDY_GROUP === "bar" ? BAR_STEPS : LINE_STEPS),
-  POST_LIKERT,
-  STEP_COMPLETE,
-];
+/* ══════════════════════════════════════════════════════════════
+   DYNAMIC STEPS (rebuilt after participant chooses their group)
+══════════════════════════════════════════════════════════════ */
+function buildSteps(group) {
+  return [
+    STEP_CONSENT,
+    STEP_GROUP_SELECT,
+    PRE_LIKERT,
+    STEP_TABLE,
+    ...(group === "bar" ? BAR_STEPS : LINE_STEPS),
+    POST_LIKERT,
+    STEP_COMPLETE,
+  ];
+}
+
+let STEPS = [STEP_CONSENT, STEP_GROUP_SELECT]; // minimal until group is chosen
 
 /* ══════════════════════════════════════════════════════════════
    STATE
@@ -293,7 +331,7 @@ const state = {
   taskQTimes:    {},
   answers:       {},
   participantId: Math.random().toString(36).slice(2, 9),
-  group:         STUDY_GROUP,
+  group:         null,
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -387,7 +425,7 @@ function timeFmt(ms) {
 
 function buildSummary() {
   return STEPS
-    .filter(t => t.type !== "info" && t.type !== "complete")
+    .filter(t => t.type !== "info" && t.type !== "complete" && t.type !== "group_select")
     .map(t => {
       const ans  = state.answers[t.id] || {};
       const base = { id: t.id, phase: t.phase || t.id, type: t.type,
@@ -396,10 +434,8 @@ function buildSummary() {
         totalSec: "—", exploreSec: "—", answerSec: "—" };
 
       if (t.type === "likert_overlay") {
-        const iq = ans.income_eq ?? "—";
-        const wq = ans.wealth_eq ?? "—";
         return { ...base, answered: true,
-          answer: `Income eq: ${iq}/10 | Wealth eq: ${wq}/10`,
+          answer: `Income eq: ${ans.income_eq ?? "—"}/10 | Wealth eq: ${ans.wealth_eq ?? "—"}/10`,
           correct: null,
           totalSec: timeFmt(ans.totalMs), exploreSec: "—", answerSec: "—" };
       }
@@ -453,6 +489,9 @@ function render() {
     overlay.classList.add("hidden");
     taskBanner.classList.remove("hidden");
     setViz(step.vizConfig);
+    if (step.autoPlay) {
+      setTimeout(() => document.getElementById("cwi-race-play")?.click(), 300);
+    }
     lockControls();
     renderTaskBanner(step, taskBanner);
   } else {
@@ -460,13 +499,14 @@ function render() {
     overlay.classList.remove("hidden");
     unlockControls();
     if (step.type === "info")           renderInfo(step, panel);
+    if (step.type === "group_select")   renderGroupSelect(step, panel);
     if (step.type === "likert_overlay") renderLikertOverlay(step, panel);
     if (step.type === "complete")       renderComplete(step, panel);
   }
   updateProgress();
 }
 
-/* ── Overlay screens ─────────────────────────────────────────── */
+/* ── Overlay: info ───────────────────────────────────────────── */
 function renderInfo(step, panel) {
   panel.innerHTML = `
     <div class="study-phase-tag">Information</div>
@@ -485,6 +525,40 @@ function renderInfo(step, panel) {
   panel.querySelector("#study-prev")?.addEventListener("click", retreat);
 }
 
+/* ── Overlay: group selection ────────────────────────────────── */
+function renderGroupSelect(step, panel) {
+  panel.innerHTML = `
+    <div class="study-phase-tag">Setup</div>
+    <h2 class="study-title">${step.title}</h2>
+    <div class="study-body">${step.content}</div>
+    <div class="group-cards">
+      <button class="group-card" id="gc-line">
+        <div class="gc-icon">📈</div>
+        <strong>Line Charts</strong>
+        <p>Data shown as continuous lines over time. Two comparison modes: juxtaposition and superposition. 4 Y-axis scales × 2 metrics = <strong>16 chart tasks</strong>.</p>
+      </button>
+      <button class="group-card" id="gc-bar">
+        <div class="gc-icon">📊</div>
+        <strong>Bar Charts</strong>
+        <p>Data shown as grouped bars. Three comparison modes including animation. 4 Y-axis scales × 2 metrics = <strong>24 chart tasks</strong>.</p>
+      </button>
+    </div>
+    <div class="study-nav">
+      <button class="study-btn secondary" id="study-prev">← Back</button>
+    </div>`;
+  panel.querySelector("#gc-line")?.addEventListener("click", () => handleGroupSelect("line"));
+  panel.querySelector("#gc-bar")?.addEventListener("click",  () => handleGroupSelect("bar"));
+  panel.querySelector("#study-prev")?.addEventListener("click", retreat);
+}
+
+function handleGroupSelect(group) {
+  state.group = group;
+  STEPS = buildSteps(group);
+  persist();
+  advance(); // now STEPS.length is full → advance from index 1 → 2 (PRE_LIKERT)
+}
+
+/* ── Overlay: equality Likerts ───────────────────────────────── */
 function renderLikertOverlay(step, panel) {
   const SCALE = [0,1,2,3,4,5,6,7,8,9,10];
   const ans   = state.answers[step.id] || {};
@@ -554,10 +628,8 @@ function buildTaskHTML(step) {
     </div>`;
   }
 
-  /* task_2q question phase */
   const s1 = ans.q1 ?? null;
   const s2 = ans.q2 ?? null;
-  const allDone = s1 != null && s2 != null;
   return `<div class="task-banner-inner">
     <button class="study-close-btn" id="task-close-btn">✕</button>
     <div class="task-phase-tag">${step.phase} — ${step.questionType} ${timer}</div>
@@ -580,12 +652,11 @@ function buildTaskHTML(step) {
     </div>
     <div class="task-banner-nav" style="margin-top:8px">
       <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
-      <button class="study-btn primary" id="task-submit" ${allDone?"":"disabled"}>Submit →</button>
+      <button class="study-btn primary" id="task-submit" ${s1!=null&&s2!=null?"":"disabled"}>Submit →</button>
     </div>
   </div>`;
 }
 
-/* ── Wire task ───────────────────────────────────────────────── */
 function wireTask(step, banner) {
   banner.querySelector("#task-close-btn")?.addEventListener("click", closeStudy);
   banner.querySelector("#task-back")?.addEventListener("click", () => { unlockControls(); retreat(); });
@@ -603,7 +674,8 @@ function wireTask(step, banner) {
 
   const checkAllDone = () => {
     const a = state.answers[step.id] || {};
-    banner.querySelector("#task-submit").disabled = !(a.q1 != null && a.q2 != null);
+    const btn = banner.querySelector("#task-submit");
+    if (btn) btn.disabled = !(a.q1 != null && a.q2 != null);
   };
   banner.querySelectorAll("[name='tq1']").forEach(radio => {
     radio.closest("label")?.addEventListener("click", () => {
@@ -658,16 +730,16 @@ function renderComplete(step, panel) {
   const summary = buildSummary();
   const rows = summary.map(r => {
     if (!r.answered) return `<tr><td>${r.phase}</td><td>${r.type}</td><td colspan="2"><em>—</em></td></tr>`;
-    const correctMark = r.correct === true ? " ✓" : r.correct === false ? " ✗" : "";
+    const mark = r.correct === true ? " ✓" : r.correct === false ? " ✗" : "";
     return `<tr>
       <td style="font-size:11px">${(r.phase||r.id).split("—").pop().trim()}</td>
       <td style="font-size:11px;color:#718096">${r.type}</td>
-      <td style="font-size:11px">${r.answer}${correctMark}</td>
+      <td style="font-size:11px">${r.answer}${mark}</td>
       <td style="font-size:11px">${r.exploreSec} / ${r.answerSec}</td>
     </tr>`;
   }).join("");
   panel.innerHTML = `
-    <div class="study-phase-tag">Complete — All Tasks Done</div>
+    <div class="study-phase-tag">Complete</div>
     <h2 class="study-title">${step.title}</h2>
     <div class="study-body">${step.content}</div>
     <div class="study-summary">
@@ -740,6 +812,9 @@ export function initStudy() {
       }
     }
   } catch(_) {}
+  // Restore full STEPS if group was already chosen in a prior session
+  if (state.group) STEPS = buildSteps(state.group);
+
   document.getElementById("study-launch-btn").addEventListener("click", () => {
     document.getElementById("study-launcher").classList.add("hidden");
     document.getElementById("study-overlay").classList.remove("hidden");
@@ -823,6 +898,16 @@ function injectStudyCSS() {
 .study-btn.primary:disabled{background:#a0aec0;cursor:not-allowed}
 .study-btn.secondary{background:#edf2f7;color:#2d3748}
 .study-btn.secondary:hover{background:#e2e8f0}
+/* Group selection cards */
+.group-cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.group-card{background:#f8f9fa;border:2.5px solid #dee2e6;border-radius:12px;padding:20px 16px;
+  text-align:left;cursor:pointer;transition:border-color .2s,background .2s,transform .15s;
+  display:flex;flex-direction:column;gap:8px;font-family:inherit}
+.group-card:hover{border-color:#2b6cb0;background:#ebf8ff;transform:translateY(-2px)}
+.gc-icon{font-size:28px;line-height:1}
+.group-card strong{font-size:15px;color:#1a202c;display:block}
+.group-card p{font-size:13px;color:#5f6368;margin:0;line-height:1.5}
+/* Task banner */
 .study-task-banner{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.97);
   border-top:3px solid #2b6cb0;z-index:9200;box-shadow:0 -4px 24px rgba(0,0,0,.12);
   max-height:54vh;overflow-y:auto}
@@ -860,6 +945,7 @@ function injectStudyCSS() {
 .summary-table th{color:#718096;font-weight:600;background:#f8f9fa}
 body:has(#study-task-banner:not(.hidden)) #app{padding-bottom:54vh}
 .hidden{display:none !important}
+@media(max-width:600px){.group-cards{grid-template-columns:1fr}}
   `;
   document.head.appendChild(s);
 }
