@@ -330,9 +330,19 @@ const BAR_CONFIGS  = Y_SCALES.flatMap(ys => BAR_POSITIONS.flatMap(pos => ["incom
 const BAR_STEPS    = BAR_CONFIGS.map((c,i) => makeBarStep(c.m, c.ys, c.pos, i));
 
 /* ── Dynamic step sequence ───────────────────────────────────── */
+const STEP_DEFINITIONS = {
+  id:"definitions", type:"info",
+  title:"Definitions: Income and Wealth",
+  content:`
+    <p>By an individual's <strong>income</strong>, we mean the total after-tax income received each month. This includes income from labor, such as after-tax salary and self-employment earnings; income from the government, such as Social Security benefits, pensions, and welfare payments; and income from assets and investments.</p>
+    <p>By an individual's <strong>wealth</strong>, we mean the total value of all assets accumulated over time minus debt. Assets include possessions such as real estate, cars, savings, stocks, pensions, and other forms of capital. When two individuals jointly own an asset, we consider each individual to own half of the asset's value.</p>`,
+  nextLabel:"Continue to Y-axis guide →",
+};
+
 function buildSteps(group) {
   return [
     STEP_CONSENT, STEP_GROUP_SELECT,
+    STEP_DEFINITIONS,
     GUIDE_LINEARZOOM, GUIDE_BREAK, GUIDE_LOG,
     PRE_LIKERT, STEP_TABLE,
     ...(group==="bar" ? BAR_STEPS : LINE_STEPS),
@@ -414,7 +424,7 @@ function saveSubAnswer(stepId, key, val) {
   state.answers[stepId].totalMs=Date.now()-(state.stepTimes[stepId]||state.startTime);
   persist();
 }
-function persist() { localStorage.setItem(STORAGE_KEY,JSON.stringify({state,version:STUDY_VERSION})); }
+function persist() {} /* no localStorage — each session starts fresh */
 
 /* ══════════════════════════════════════════════════════════════
    SUMMARY (used for download only — not shown on screen)
@@ -592,6 +602,30 @@ function buildTaskHTML(step) {
         <button class="study-btn primary" id="task-ready">I've examined the chart — show questions →</button>
       </div></div>`;
   }
+  /* Guide feedback phase */
+  if (taskPhase==="feedback" && step.isGuide) {
+    const c1=ans.q1===step.q1.correct, c2=ans.q2===step.q2.correct;
+    const lbl=(q,v)=>q.options.find(o=>o.value===v)?.label||v||"—";
+    return `<div class="task-banner-inner">
+      <div class="task-phase-tag">${step.phase} <span class="task-qtype-tag">${step.questionType}</span> <span class="task-guide-tag">Practice Feedback</span></div>
+      <div class="guide-feedback">
+        <div class="guide-fb-item ${c1?"fb-correct":"fb-wrong"}">
+          <span class="fb-icon">${c1?"✓":"✗"}</span>
+          <div><strong>Q1:</strong> ${c1?"Correct!":"Incorrect."}
+            ${!c1?`<div class="fb-answer">Correct answer: <em>${lbl(step.q1,step.q1.correct)}</em></div>`:""}
+          </div>
+        </div>
+        <div class="guide-fb-item ${c2?"fb-correct":"fb-wrong"}">
+          <span class="fb-icon">${c2?"✓":"✗"}</span>
+          <div><strong>Q2:</strong> ${c2?"Correct!":"Incorrect."}
+            ${!c2?`<div class="fb-answer">Correct answer: <em>${lbl(step.q2,step.q2.correct)}</em></div>`:""}
+          </div>
+        </div>
+      </div>
+      <div class="task-banner-nav"><button class="study-btn primary" id="task-continue">Continue →</button></div>
+    </div>`;
+  }
+
   const s1=ans.q1??null, s2=ans.q2??null;
   return `<div class="task-banner-inner">
     <button class="study-close-btn" id="task-close-btn">✕</button>
@@ -645,7 +679,15 @@ function wireTask(step, banner) {
       saveSubAnswer(step.id,"q2",radio.value); checkDone();
     });
   });
-  banner.querySelector("#task-submit")?.addEventListener("click",()=>{ unlockControls(); advance(); });
+  banner.querySelector("#task-submit")?.addEventListener("click",()=>{
+    unlockControls();
+    if (step.isGuide) {
+      taskPhase="feedback"; banner.innerHTML=buildTaskHTML(step); wireTask(step,banner);
+    } else {
+      advance();
+    }
+  });
+  banner.querySelector("#task-continue")?.addEventListener("click",()=>{ advance(); });
   startTaskTimer(banner, state.stepTimes[step.id]);
 }
 
@@ -723,14 +765,6 @@ function retreat() {
 ══════════════════════════════════════════════════════════════ */
 export function initStudy() {
   injectStudyHTML(); injectStudyCSS();
-  try {
-    const saved=localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const p=JSON.parse(saved);
-      if (p.version===STUDY_VERSION&&p.state) { Object.assign(state,p.state); state.taskQTimes=state.taskQTimes||{}; }
-    }
-  } catch(_) {}
-  if (state.group) STEPS=buildSteps(state.group);
   document.getElementById("study-launch-btn").addEventListener("click",()=>{
     document.getElementById("study-launcher").classList.add("hidden");
     document.getElementById("study-overlay").classList.remove("hidden");
@@ -832,6 +866,12 @@ function injectStudyCSS() {
 .complete-step strong{display:block;font-size:14px;color:#1a202c;margin-bottom:4px}
 .complete-step p{margin:0 0 8px;font-size:13px;color:#5f6368}
 .upload-note{color:#c53030!important;font-style:italic}
+.guide-feedback{display:flex;flex-direction:column;gap:10px;margin:10px 0}
+.guide-fb-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:8px;font-size:13px}
+.fb-correct{background:#d1fae5;border:1.5px solid #6ee7b7}
+.fb-wrong{background:#fee2e2;border:1.5px solid #fca5a5}
+.fb-icon{font-size:16px;font-weight:700;flex-shrink:0;margin-top:1px}
+.fb-answer{margin-top:4px;color:#374151;font-size:12px}
 body:has(#study-task-banner:not(.hidden)) #app{padding-bottom:54vh}
 .hidden{display:none !important}
 @media(max-width:600px){.group-cards{grid-template-columns:1fr}}
