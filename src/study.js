@@ -602,47 +602,28 @@ function buildTaskHTML(step) {
         <button class="study-btn primary" id="task-ready">I've examined the chart — show questions →</button>
       </div></div>`;
   }
-  /* Guide feedback phase */
-  if (taskPhase==="feedback" && step.isGuide) {
-    const c1=ans.q1===step.q1.correct, c2=ans.q2===step.q2.correct;
-    const lbl=(q,v)=>q.options.find(o=>o.value===v)?.label||v||"—";
-    return `<div class="task-banner-inner">
-      <div class="task-phase-tag">${step.phase} <span class="task-qtype-tag">${step.questionType}</span> <span class="task-guide-tag">Practice Feedback</span></div>
-      <div class="guide-feedback">
-        <div class="guide-fb-item ${c1?"fb-correct":"fb-wrong"}">
-          <span class="fb-icon">${c1?"✓":"✗"}</span>
-          <div><strong>Q1:</strong> ${c1?"Correct!":"Incorrect."}
-            ${!c1?`<div class="fb-answer">Correct answer: <em>${lbl(step.q1,step.q1.correct)}</em></div>`:""}
-          </div>
-        </div>
-        <div class="guide-fb-item ${c2?"fb-correct":"fb-wrong"}">
-          <span class="fb-icon">${c2?"✓":"✗"}</span>
-          <div><strong>Q2:</strong> ${c2?"Correct!":"Incorrect."}
-            ${!c2?`<div class="fb-answer">Correct answer: <em>${lbl(step.q2,step.q2.correct)}</em></div>`:""}
-          </div>
-        </div>
-      </div>
-      <div class="task-banner-nav"><button class="study-btn primary" id="task-continue">Continue →</button></div>
-    </div>`;
-  }
-
   const s1=ans.q1??null, s2=ans.q2??null;
+  const correctLbl=(q)=>q.options.find(o=>o.value===q.correct)?.label||"";
+  const guideAnswer=(q)=>step.isGuide
+    ?`<p class="guide-correct-note">✔ Correct answer: <strong>${correctLbl(q)}</strong></p>`:"";
   return `<div class="task-banner-inner">
     <button class="study-close-btn" id="task-close-btn">✕</button>
     <div class="task-phase-tag">${step.phase} — ${step.questionType} ${timer}</div>
     <p class="task-question"><strong>${step.q1.text}</strong></p>
-    <div class="task-options-col tq1-opts" style="margin-bottom:10px">
+    <div class="task-options-col tq1-opts" style="margin-bottom:4px">
       ${step.q1.options.map(o=>`<label class="task-option ${s1===o.value?"selected":""}">
         <input type="radio" name="tq1" value="${o.value}" ${s1===o.value?"checked":""}/>
         ${o.label}</label>`).join("")}
     </div>
+    ${guideAnswer(step.q1)}
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0">
     <p class="task-question"><strong>${step.q2.text}</strong></p>
-    <div class="task-options-col tq2-opts">
+    <div class="task-options-col tq2-opts" style="margin-bottom:4px">
       ${step.q2.options.map(o=>`<label class="task-option ${s2===o.value?"selected":""}">
         <input type="radio" name="tq2" value="${o.value}" ${s2===o.value?"checked":""}/>
         ${o.label}</label>`).join("")}
     </div>
+    ${guideAnswer(step.q2)}
     <div class="task-banner-nav" style="margin-top:8px">
       <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
       <button class="study-btn primary" id="task-submit" ${s1!=null&&s2!=null?"":"disabled"}>Submit →</button>
@@ -679,15 +660,7 @@ function wireTask(step, banner) {
       saveSubAnswer(step.id,"q2",radio.value); checkDone();
     });
   });
-  banner.querySelector("#task-submit")?.addEventListener("click",()=>{
-    unlockControls();
-    if (step.isGuide) {
-      taskPhase="feedback"; banner.innerHTML=buildTaskHTML(step); wireTask(step,banner);
-    } else {
-      advance();
-    }
-  });
-  banner.querySelector("#task-continue")?.addEventListener("click",()=>{ advance(); });
+  banner.querySelector("#task-submit")?.addEventListener("click",()=>{ unlockControls(); advance(); });
   startTaskTimer(banner, state.stepTimes[step.id]);
 }
 
@@ -864,12 +837,7 @@ function injectStudyCSS() {
 .complete-step strong{display:block;font-size:14px;color:#1a202c;margin-bottom:4px}
 .complete-step p{margin:0 0 8px;font-size:13px;color:#5f6368}
 .upload-note{color:#c53030!important;font-style:italic}
-.guide-feedback{display:flex;flex-direction:column;gap:10px;margin:10px 0}
-.guide-fb-item{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:8px;font-size:13px}
-.fb-correct{background:#d1fae5;border:1.5px solid #6ee7b7}
-.fb-wrong{background:#fee2e2;border:1.5px solid #fca5a5}
-.fb-icon{font-size:16px;font-weight:700;flex-shrink:0;margin-top:1px}
-.fb-answer{margin-top:4px;color:#374151;font-size:12px}
+.guide-correct-note{font-size:12px;color:#166534;background:#dcfce7;border:1px solid #86efac;border-radius:5px;padding:5px 10px;margin:2px 0 6px}
 body:has(#study-task-banner:not(.hidden)) #app{padding-bottom:54vh}
 .hidden{display:none !important}
 @media(max-width:600px){.group-cards{grid-template-columns:1fr}}
