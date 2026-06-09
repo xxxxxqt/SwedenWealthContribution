@@ -5,7 +5,7 @@
 
 const STUDY_VERSION = "10.2";
 const STORAGE_KEY   = "wealth-study-data-v10-2";
-const ONEDRIVE_REQUEST_URL = "https://1drv.ms/f/c/b440acd6517e9d8a/IgAXJfxK03yxSKR_DAq3UjdmAbPCMZVRrbTZJiKHk7NYb7Q?e=LHCxco";
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSeGSR3JrkL8QeYiShP7VL8oUSCe_nSRIsnVCMl4Tm6CU4uISg/viewform?usp=publish-editor";
 
 /* ══════════════════════════════════════════════════════════════
    FIXED STEPS
@@ -726,11 +726,9 @@ function renderComplete(step, panel) {
       </div>
       <div class="complete-step">
         <span class="complete-step-num">2</span>
-        <div><strong>Upload to researcher</strong>
-          <p>Click the button below to open the upload folder, then drag your JSON file in.</p>
-          ${ONEDRIVE_REQUEST_URL
-            ?`<a class="study-btn primary" href="${ONEDRIVE_REQUEST_URL}" target="_blank" rel="noopener">⬆ Upload via OneDrive</a>`
-            :`<p class="upload-note">Upload link not configured — please send the JSON file directly to the researcher.</p>`}
+        <div><strong>Submit via Google Form</strong>
+          <p>Click the link below to open the Google Form, then upload your JSON file there.</p>
+          <a class="study-btn primary" href="${GOOGLE_FORM_URL}" target="_blank" rel="noopener">⬆ Open Google Form to submit</a>
         </div>
       </div>
     </div>
