@@ -22,11 +22,7 @@ const STEP_CONSENT = {
   nextLabel: "Next →", requireConsent: true,
 };
 
-const STEP_GROUP_SELECT = {
-  id: "group_select", type: "group_select",
-  title: "Choose your chart type",
-  content: `<p>You will examine charts showing Swedish wealth and income data. Please choose which chart type you would like to work with:</p>`,
-};
+/* STEP_GROUP_SELECT removed — group is auto-assigned on launch */
 
 const STEP_COMPLETE = {
   id: "complete", type: "complete",
@@ -200,66 +196,43 @@ const STEP_TABLE = {
 /* ══════════════════════════════════════════════════════════════
    Y-AXIS GUIDE STEPS  (isGuide:true — controls stay unlocked)
 ══════════════════════════════════════════════════════════════ */
-const GUIDE_LINEARZOOM = {
-  id:"guide_lz", type:"task_2q", isGuide:true,
-  phase:"Y-axis Guide", questionType:"Linear + Zoom",
-  vizConfig:{ representation:"bar", comparison:"juxtaposition", metric:"wealth", popEncoding:"without", years:"2020", yScale:"linear-zoom" },
-  taskText:`<strong>📐 Linear + Zoom Y-axis</strong> — The axis has equal spacing: every step up represents the same SEK increase. A range slider lets you <strong>zoom in</strong> (slide left) to see low-value groups clearly, or <strong>zoom out</strong> (slide right) to see the full range.<br><br>Try the slider now before clicking "show questions".`,
-  q1:{
-    text:"Q1 — Practice: After zooming out to see all groups, which group has the highest average wealth in 2020?",
-    options:[{label:"Bottom 50%",value:"a"},{label:"Top 10%",value:"b"},{label:"Top 0.01%",value:"c"},{label:"Top 0.001%",value:"d"}],
-    correct:"d",
-  },
-  q2:{
-    text:"Q2 — Practice: After sliding the zoom slider LEFT (zooming in), which group's bar appears BELOW zero (negative wealth)?",
-    options:[{label:"Top 10%",value:"a"},{label:"Top 1%",value:"b"},{label:"Top 0.1%",value:"c"},{label:"Bottom 50%",value:"d"}],
-    correct:"d",
-  },
-};
-
-const GUIDE_BREAK = {
-  id:"guide_brk", type:"task_2q", isGuide:true,
-  phase:"Y-axis Guide", questionType:"Scale Break",
-  vizConfig:{ representation:"bar", comparison:"juxtaposition", metric:"wealth", popEncoding:"without", years:"2020", yScale:"break" },
-  taskText:`<strong>〰️ Scale Break (zig-zag) Y-axis</strong> — A large gap in the middle of the Y-axis range is skipped. This lets both very low-value groups (bottom section) and the extreme Top 0.001% (top section) appear in the same chart. The <strong>zig-zag symbol</strong> marks where the axis jumps.`,
-  q1:{
-    text:"Q1 — Practice: On this scale break chart, which group's bar appears in the UPPER section (above the zig-zag symbol)?",
-    options:[{label:"Top 10%",value:"a"},{label:"Top 0.1%",value:"b"},{label:"Top 0.01%",value:"c"},{label:"Top 0.001%",value:"d"}],
-    correct:"d",
-  },
-  q2:{
-    text:"Q2 — Practice: What does the zig-zag symbol on the Y-axis indicate?",
-    options:[
-      {label:"The values in that range are estimated",value:"a"},
-      {label:"A large range of values is skipped so both low and high groups fit in one chart",value:"b"},
-      {label:"The axis switches to a logarithmic scale",value:"c"},
-      {label:"Data is missing for those values",value:"d"},
-    ],
-    correct:"b",
-  },
-};
-
-const GUIDE_LOG = {
-  id:"guide_log", type:"task_2q", isGuide:true,
-  phase:"Y-axis Guide", questionType:"Logarithmic",
-  vizConfig:{ representation:"bar", comparison:"juxtaposition", metric:"wealth", popEncoding:"without", years:"2020", yScale:"log" },
-  taskText:`<strong>📊 Logarithmic Y-axis</strong> — Each major step on this axis represents a <strong>multiplication by ~10</strong>, not a fixed SEK addition. This makes it possible to compare groups whose values differ by thousands of times on the same chart. <em>Note: groups with zero or negative wealth cannot be shown.</em>`,
-  q1:{
-    text:"Q1 — Practice: On a logarithmic scale, moving up one major tick mark represents approximately...",
-    options:[
-      {label:"An increase of 1 million SEK",value:"a"},
-      {label:"A multiplication by approximately 10",value:"b"},
-      {label:"A doubling (×2) of the value",value:"c"},
-      {label:"An increase of 50%",value:"d"},
-    ],
-    correct:"b",
-  },
-  q2:{
-    text:"Q2 — Practice: On this logarithmic chart (wealth 2020), which group is NOT visible because its value cannot be shown on a log scale?",
-    options:[{label:"Top 0.001% (very high positive)",value:"a"},{label:"Top 1% (positive)",value:"b"},{label:"Top 10% (positive)",value:"c"},{label:"Bottom 50% (negative wealth — net debt)",value:"d"}],
-    correct:"d",
-  },
-};
+/* Guide steps are generated per-group so the chart type matches the study condition */
+function makeGuides(group) {
+  const isBar = group === "bar";
+  const rep   = isBar ? "bar" : "line";
+  const yrs   = isBar ? "2020" : ALL_YEARS;
+  const elem  = isBar ? "bar" : "line";
+  const viz   = (yScale) => ({ representation:rep, comparison:"juxtaposition", metric:"wealth", popEncoding:"without", years:yrs, yScale });
+  return [
+    { id:"guide_lz", type:"task_2q", isGuide:true,
+      phase:"Y-axis Guide", questionType:"Linear + Zoom",
+      vizConfig: viz("linear-zoom"),
+      taskText:`<strong>📐 Linear + Zoom Y-axis</strong> — The axis has equal spacing: every step up represents the same SEK increase. A range slider lets you <strong>zoom in</strong> (slide left) to see low-value groups clearly, or <strong>zoom out</strong> (slide right) to see the full range.<br><br>Try the slider now before clicking "show questions".`,
+      q1:{ text:"Q1 — Practice: After zooming out to see all groups, which group has the highest average wealth?",
+           options:[{label:"Bottom 50%",value:"a"},{label:"Top 10%",value:"b"},{label:"Top 0.01%",value:"c"},{label:"Top 0.001%",value:"d"}], correct:"d" },
+      q2:{ text:`Q2 — Practice: After sliding the zoom slider LEFT (zooming in), which group's ${elem} appears BELOW zero (negative wealth)?`,
+           options:[{label:"Top 10%",value:"a"},{label:"Top 1%",value:"b"},{label:"Top 0.1%",value:"c"},{label:"Bottom 50%",value:"d"}], correct:"d" },
+    },
+    { id:"guide_brk", type:"task_2q", isGuide:true,
+      phase:"Y-axis Guide", questionType:"Scale Break",
+      vizConfig: viz("break"),
+      taskText:`<strong>〰️ Scale Break (zig-zag) Y-axis</strong> — A large gap in the middle of the Y-axis range is skipped. This lets both very low-value groups (bottom section) and the extreme Top 0.001% (top section) appear in the same chart. The <strong>zig-zag symbol</strong> marks where the axis jumps.`,
+      q1:{ text:`Q1 — Practice: On this scale break chart, which group's ${elem} appears in the UPPER section (above the zig-zag symbol)?`,
+           options:[{label:"Top 10%",value:"a"},{label:"Top 0.1%",value:"b"},{label:"Top 0.01%",value:"c"},{label:"Top 0.001%",value:"d"}], correct:"d" },
+      q2:{ text:"Q2 — Practice: What does the zig-zag symbol on the Y-axis indicate?",
+           options:[{label:"The values in that range are estimated",value:"a"},{label:"A large range of values is skipped so both low and high groups fit in one chart",value:"b"},{label:"The axis switches to a logarithmic scale",value:"c"},{label:"Data is missing for those values",value:"d"}], correct:"b" },
+    },
+    { id:"guide_log", type:"task_2q", isGuide:true,
+      phase:"Y-axis Guide", questionType:"Logarithmic",
+      vizConfig: viz("log"),
+      taskText:`<strong>📊 Logarithmic Y-axis</strong> — Each major step on this axis represents a <strong>multiplication by ~10</strong>, not a fixed SEK addition. This makes it possible to compare groups whose values differ by thousands of times on the same chart. <em>Note: groups with zero or negative wealth cannot be shown.</em>`,
+      q1:{ text:"Q1 — Practice: On a logarithmic scale, moving up one major tick mark represents approximately...",
+           options:[{label:"An increase of 1 million SEK",value:"a"},{label:"A multiplication by approximately 10",value:"b"},{label:"A doubling (×2) of the value",value:"c"},{label:"An increase of 50%",value:"d"}], correct:"b" },
+      q2:{ text:`Q2 — Practice: On this logarithmic chart, which group is NOT visible because its value cannot be shown on a log scale?`,
+           options:[{label:"Top 0.001% (very high positive)",value:"a"},{label:"Top 1% (positive)",value:"b"},{label:"Top 10% (positive)",value:"c"},{label:"Bottom 50% (negative wealth — net debt)",value:"d"}], correct:"d" },
+    },
+  ];
+}
 
 /* ══════════════════════════════════════════════════════════════
    CHART STEP FACTORIES
@@ -341,16 +314,25 @@ const STEP_DEFINITIONS = {
 
 function buildSteps(group) {
   return [
-    STEP_CONSENT, STEP_GROUP_SELECT,
+    STEP_CONSENT,
     STEP_DEFINITIONS,
-    GUIDE_LINEARZOOM, GUIDE_BREAK, GUIDE_LOG,
+    ...makeGuides(group),
     PRE_LIKERT, STEP_TABLE,
     ...(group==="bar" ? BAR_STEPS : LINE_STEPS),
     POST_LIKERT, STEP_COMPLETE,
   ];
 }
 
-let STEPS = [STEP_CONSENT, STEP_GROUP_SELECT];
+/* Auto-alternate groups using localStorage so each new participant gets the opposite group */
+const ROTATION_KEY = "study-group-rotation";
+function assignGroup() {
+  const last = localStorage.getItem(ROTATION_KEY);
+  const next = last === "line" ? "bar" : "line"; // first-ever user gets "line"
+  localStorage.setItem(ROTATION_KEY, next);
+  return next;
+}
+
+let STEPS = [STEP_CONSENT]; // rebuilt on launch once group is assigned
 
 /* ══════════════════════════════════════════════════════════════
    STATE
@@ -495,7 +477,6 @@ function render() {
     overlay.classList.remove("hidden");
     unlockControls();
     if (step.type==="info")           renderInfo(step, panel);
-    if (step.type==="group_select")   renderGroupSelect(step, panel);
     if (step.type==="likert_overlay") renderLikertOverlay(step, panel);
     if (step.type==="complete")       renderComplete(step, panel);
   }
@@ -520,29 +501,7 @@ function renderInfo(step, panel) {
 }
 
 /* ── Overlay: group selection ────────────────────────────────── */
-function renderGroupSelect(step, panel) {
-  panel.innerHTML=`<div class="study-phase-tag">Setup</div>
-    <h2 class="study-title">${step.title}</h2>
-    <div class="study-body">${step.content}</div>
-    <div class="group-cards">
-      <button class="group-card" id="gc-line">
-        <div class="gc-icon">📈</div><strong>Line Charts</strong>
-        <p>Continuous lines over time. Juxtaposition &amp; superposition. 4 Y-axis scales × 2 metrics = <strong>16 chart tasks</strong>.</p>
-      </button>
-      <button class="group-card" id="gc-bar">
-        <div class="gc-icon">📊</div><strong>Bar Charts</strong>
-        <p>Grouped bars including animation. 4 Y-axis scales × 2 metrics = <strong>24 chart tasks</strong>.</p>
-      </button>
-    </div>
-    <div class="study-nav"><button class="study-btn secondary" id="study-prev">← Back</button></div>`;
-  panel.querySelector("#gc-line")?.addEventListener("click",()=>handleGroupSelect("line"));
-  panel.querySelector("#gc-bar")?.addEventListener("click",()=>handleGroupSelect("bar"));
-  panel.querySelector("#study-prev")?.addEventListener("click",retreat);
-}
 
-function handleGroupSelect(group) {
-  state.group=group; STEPS=buildSteps(group); persist(); advance();
-}
 
 /* ── Overlay: equality Likerts ───────────────────────────────── */
 function renderLikertOverlay(step, panel) {
@@ -737,6 +696,8 @@ function retreat() {
 export function initStudy() {
   injectStudyHTML(); injectStudyCSS();
   document.getElementById("study-launch-btn").addEventListener("click",()=>{
+    state.group = assignGroup();
+    STEPS = buildSteps(state.group);
     document.getElementById("study-launcher").classList.add("hidden");
     document.getElementById("study-overlay").classList.remove("hidden");
     render();
