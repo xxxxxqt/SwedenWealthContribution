@@ -563,7 +563,7 @@ function buildTaskHTML(step) {
   }
   const s1=ans.q1??null, s2=ans.q2??null;
   const correctLbl=(q)=>q.options.find(o=>o.value===q.correct)?.label||"";
-  const guideAnswer=(q)=>step.isGuide
+  const guideAnswer=(q,sel)=>step.isGuide&&sel!=null
     ?`<p class="guide-correct-note">✔ Correct answer: <strong>${correctLbl(q)}</strong></p>`:"";
   return `<div class="task-banner-inner">
     <button class="study-close-btn" id="task-close-btn">✕</button>
@@ -574,7 +574,7 @@ function buildTaskHTML(step) {
         <input type="radio" name="tq1" value="${o.value}" ${s1===o.value?"checked":""}/>
         ${o.label}</label>`).join("")}
     </div>
-    ${guideAnswer(step.q1)}
+    ${guideAnswer(step.q1,s1)}
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0">
     <p class="task-question"><strong>${step.q2.text}</strong></p>
     <div class="task-options-col tq2-opts" style="margin-bottom:4px">
@@ -582,7 +582,7 @@ function buildTaskHTML(step) {
         <input type="radio" name="tq2" value="${o.value}" ${s2===o.value?"checked":""}/>
         ${o.label}</label>`).join("")}
     </div>
-    ${guideAnswer(step.q2)}
+    ${guideAnswer(step.q2,s2)}
     <div class="task-banner-nav" style="margin-top:8px">
       <button class="study-btn secondary" id="task-back-q">← Re-read description</button>
       <button class="study-btn primary" id="task-submit" ${s1!=null&&s2!=null?"":"disabled"}>Submit →</button>
@@ -607,16 +607,24 @@ function wireTask(step, banner) {
   };
   banner.querySelectorAll("[name='tq1']").forEach(radio=>{
     radio.closest("label")?.addEventListener("click",()=>{
-      banner.querySelectorAll("[name='tq1']").forEach(r=>r.closest("label")?.classList.remove("selected"));
-      radio.closest("label")?.classList.add("selected");
-      saveSubAnswer(step.id,"q1",radio.value); checkDone();
+      saveSubAnswer(step.id,"q1",radio.value);
+      if(step.isGuide){banner.innerHTML=buildTaskHTML(step);wireTask(step,banner);}
+      else{
+        banner.querySelectorAll("[name='tq1']").forEach(r=>r.closest("label")?.classList.remove("selected"));
+        radio.closest("label")?.classList.add("selected");
+        checkDone();
+      }
     });
   });
   banner.querySelectorAll("[name='tq2']").forEach(radio=>{
     radio.closest("label")?.addEventListener("click",()=>{
-      banner.querySelectorAll("[name='tq2']").forEach(r=>r.closest("label")?.classList.remove("selected"));
-      radio.closest("label")?.classList.add("selected");
-      saveSubAnswer(step.id,"q2",radio.value); checkDone();
+      saveSubAnswer(step.id,"q2",radio.value);
+      if(step.isGuide){banner.innerHTML=buildTaskHTML(step);wireTask(step,banner);}
+      else{
+        banner.querySelectorAll("[name='tq2']").forEach(r=>r.closest("label")?.classList.remove("selected"));
+        radio.closest("label")?.classList.add("selected");
+        checkDone();
+      }
     });
   });
   banner.querySelector("#task-submit")?.addEventListener("click",()=>{ unlockControls(); advance(); });
