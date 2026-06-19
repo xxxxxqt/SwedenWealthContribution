@@ -639,17 +639,25 @@ function _ensureBlocker() {
     const pane=document.createElement("div");
     pane.id="cwi-interaction-blocker";
     pane.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;cursor:default;";
-    // Proxy mousemove so tooltips still work while controls stay blocked
+    // Proxy mouse events so tooltips still work while controls stay blocked
+    pane._lastEl=null;
     pane.addEventListener("mousemove",(e)=>{
       pane.style.pointerEvents="none";
       const el=document.elementFromPoint(e.clientX,e.clientY);
       pane.style.pointerEvents="";
-      if(el&&root.contains(el)){
-        el.dispatchEvent(new MouseEvent("mousemove",{bubbles:true,cancelable:true,
+      if(!el||!root.contains(el)) return;
+      if(el!==pane._lastEl){
+        if(pane._lastEl) pane._lastEl.dispatchEvent(new MouseEvent("mouseout",{bubbles:true,
+          clientX:e.clientX,clientY:e.clientY}));
+        el.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,
           clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY}));
+        pane._lastEl=el;
       }
+      el.dispatchEvent(new MouseEvent("mousemove",{bubbles:true,cancelable:true,
+        clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY}));
     });
     pane.addEventListener("mouseleave",()=>{
+      if(pane._lastEl){pane._lastEl.dispatchEvent(new MouseEvent("mouseout",{bubbles:true}));pane._lastEl=null;}
       root.querySelectorAll("svg").forEach(svg=>
         svg.dispatchEvent(new MouseEvent("mouseleave",{bubbles:true})));
     });
