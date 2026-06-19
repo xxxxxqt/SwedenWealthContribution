@@ -388,7 +388,6 @@ function unlockControls() {
   const root=document.getElementById("cwi-render-root");
   if (root) root._studyLocked=false;
   document.getElementById("cwi-interaction-blocker")?.remove();
-  document.getElementById("cwi-tooltip")?.style.removeProperty("display");
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -640,9 +639,22 @@ function _ensureBlocker() {
     const pane=document.createElement("div");
     pane.id="cwi-interaction-blocker";
     pane.style.cssText="position:absolute;top:0;left:0;width:100%;height:100%;z-index:200;cursor:default;";
+    // Proxy mousemove so tooltips still work while controls stay blocked
+    pane.addEventListener("mousemove",(e)=>{
+      pane.style.pointerEvents="none";
+      const el=document.elementFromPoint(e.clientX,e.clientY);
+      pane.style.pointerEvents="";
+      if(el&&root.contains(el)){
+        el.dispatchEvent(new MouseEvent("mousemove",{bubbles:true,cancelable:true,
+          clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY}));
+      }
+    });
+    pane.addEventListener("mouseleave",()=>{
+      root.querySelectorAll("svg").forEach(svg=>
+        svg.dispatchEvent(new MouseEvent("mouseleave",{bubbles:true})));
+    });
     root.appendChild(pane);
   }
-  document.getElementById("cwi-tooltip")?.style.setProperty("display","none");
 }
 function startTaskTimer(banner, t0) {
   if (_timerInterval) { clearInterval(_timerInterval); _timerInterval=null; }
