@@ -312,11 +312,29 @@ const STEP_DEFINITIONS = {
   nextLabel:"Continue to Y-axis guide →",
 };
 
+const STEP_DEMOGRAPHICS = {
+  id:"demographics", type:"demographics",
+  phase:"Background", title:"About You",
+  sexOptions:[
+    { label:"Male", value:"male" },
+    { label:"Female", value:"female" },
+    { label:"Prefer not to say", value:"na" },
+  ],
+  vizLevelOptions:[
+    { label:"1 — Novice (rarely look at charts/graphs)", value:"1" },
+    { label:"2 — Beginner", value:"2" },
+    { label:"3 — Intermediate", value:"3" },
+    { label:"4 — Advanced", value:"4" },
+    { label:"5 — Expert (work with data visualization regularly)", value:"5" },
+  ],
+};
+
 function buildSteps(group) {
   return [
     STEP_CONSENT,
     STEP_DEFINITIONS,
     ...makeGuides(group),
+    STEP_DEMOGRAPHICS,
     PRE_LIKERT, STEP_TABLE,
     ...(group==="bar" ? BAR_STEPS : LINE_STEPS),
     POST_LIKERT, STEP_COMPLETE,
@@ -421,6 +439,9 @@ function buildSummary() {
     if (t.type==="likert_overlay") return {...base,answered:true,
       answer:`Income eq: ${ans.income_eq??"—"}/10 | Wealth eq: ${ans.wealth_eq??"—"}/10`,
       correct:null,totalSec:timeFmt(ans.totalMs),exploreSec:"—",answerSec:"—"};
+    if (t.type==="demographics") return {...base,answered:true,
+      answer:`Sex: ${ans.sex??"—"} | Viz level: ${ans.vizLevel??"—"}`,
+      correct:null,totalSec:timeFmt(ans.totalMs),exploreSec:"—",answerSec:"—"};
     if (t.type==="task_2q") {
       const o1=(t.q1?.options||[]).find(o=>o.value===ans.q1)?.label??ans.q1??"—";
       const o2=(t.q2?.options||[]).find(o=>o.value===ans.q2)?.label??ans.q2??"—";
@@ -477,6 +498,7 @@ function render() {
     unlockControls();
     if (step.type==="info")           renderInfo(step, panel);
     if (step.type==="likert_overlay") renderLikertOverlay(step, panel);
+    if (step.type==="demographics")   renderDemographics(step, panel);
     if (step.type==="complete")       renderComplete(step, panel);
   }
   updateProgress();
@@ -534,6 +556,47 @@ function renderLikertOverlay(step, panel) {
       });
     });
   });
+  panel.querySelector("#study-next")?.addEventListener("click",advance);
+  panel.querySelector("#study-prev")?.addEventListener("click",retreat);
+}
+
+/* ── Overlay: demographics ───────────────────────────────────── */
+function renderDemographics(step, panel) {
+  const ans=state.answers[step.id]||{};
+  const allDone=()=>ans.sex!=null && ans.vizLevel!=null;
+  const optGroup=(name,opts,selected)=>`<div class="task-options-col">
+    ${opts.map(o=>`<label class="task-option ${selected===o.value?"selected":""}">
+      <input type="radio" name="${name}" value="${o.value}" ${selected===o.value?"checked":""}/>
+      ${o.label}</label>`).join("")}
+    </div>`;
+  panel.innerHTML=`<div class="study-phase-tag">${step.phase}</div>
+    <h2 class="study-title">${step.title}</h2>
+    <div class="study-body">
+      <div class="task-likert-row">
+        <p class="task-likert-label">What is your sex?</p>
+        ${optGroup("demo_sex", step.sexOptions, ans.sex)}
+      </div>
+      <div class="task-likert-row">
+        <p class="task-likert-label">How would you rate your own data visualization literacy / experience?</p>
+        ${optGroup("demo_vizlevel", step.vizLevelOptions, ans.vizLevel)}
+      </div>
+    </div>
+    <div class="study-nav">
+      ${state.currentStep>0?`<button class="study-btn secondary" id="study-prev">← Back</button>`:""}
+      <button class="study-btn primary" id="study-next" ${allDone()?"":"disabled"}>Next →</button>
+    </div>`;
+  const wireGroup=(name,key)=>{
+    panel.querySelectorAll(`[name="${name}"]`).forEach(radio=>{
+      radio.closest("label")?.addEventListener("click",()=>{
+        panel.querySelectorAll(`[name="${name}"]`).forEach(r=>r.closest("label")?.classList.remove("selected"));
+        radio.closest("label")?.classList.add("selected");
+        saveSubAnswer(step.id,key,radio.value);
+        panel.querySelector("#study-next").disabled=!allDone();
+      });
+    });
+  };
+  wireGroup("demo_sex","sex");
+  wireGroup("demo_vizlevel","vizLevel");
   panel.querySelector("#study-next")?.addEventListener("click",advance);
   panel.querySelector("#study-prev")?.addEventListener("click",retreat);
 }
@@ -647,7 +710,7 @@ function _ensureBlocker() {
       pane.style.pointerEvents="";
       if(!el||!root.contains(el)) return;
       if(el!==pane._lastEl){
-        if(pane._lastEl) pane._lastEl.dispatchEvent(new MouseEvent("mouseout",{bubbles:true,
+        if(pane._lastEl) pane._lastEl.dispatchEvent(new MouseEvent("mouseleave",{bubbles:true,
           clientX:e.clientX,clientY:e.clientY}));
         el.dispatchEvent(new MouseEvent("mouseover",{bubbles:true,
           clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY}));
@@ -657,7 +720,7 @@ function _ensureBlocker() {
         clientX:e.clientX,clientY:e.clientY,screenX:e.screenX,screenY:e.screenY}));
     });
     pane.addEventListener("mouseleave",()=>{
-      if(pane._lastEl){pane._lastEl.dispatchEvent(new MouseEvent("mouseout",{bubbles:true}));pane._lastEl=null;}
+      if(pane._lastEl){pane._lastEl.dispatchEvent(new MouseEvent("mouseleave",{bubbles:true}));pane._lastEl=null;}
       root.querySelectorAll("svg").forEach(svg=>
         svg.dispatchEvent(new MouseEvent("mouseleave",{bubbles:true})));
     });
