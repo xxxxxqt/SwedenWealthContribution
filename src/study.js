@@ -802,7 +802,16 @@ function closeStudy() {
   document.getElementById("study-task-banner").classList.add("hidden");
   document.getElementById("study-progress-container").classList.add("hidden");
   document.getElementById("study-launcher").classList.remove("hidden");
+  resetState();
+}
+function resetState() {
   state.currentStep=0;
+  state.startTime=Date.now();
+  state.stepTimes={};
+  state.taskQTimes={};
+  state.answers={};
+  state.participantId=Math.random().toString(36).slice(2,9);
+  state.group=null;
 }
 
 /* ══════════════════════════════════════════════════════════════
