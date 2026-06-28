@@ -327,6 +327,13 @@ const STEP_DEMOGRAPHICS = {
     { label:"4 — Advanced", value:"4" },
     { label:"5 — Expert (work with data visualization regularly)", value:"5" },
   ],
+  chartFreqOptions:[
+    { label:"Daily", value:"daily" },
+    { label:"Weekly", value:"weekly" },
+    { label:"Monthly", value:"monthly" },
+    { label:"Rarely", value:"rarely" },
+    { label:"Never", value:"never" },
+  ],
 };
 
 function buildSteps(group) {
@@ -440,7 +447,7 @@ function buildSummary() {
       answer:`Income eq: ${ans.income_eq??"—"}/10 | Wealth eq: ${ans.wealth_eq??"—"}/10`,
       correct:null,totalSec:timeFmt(ans.totalMs),exploreSec:"—",answerSec:"—"};
     if (t.type==="demographics") return {...base,answered:true,
-      answer:`Sex: ${ans.sex??"—"} | Viz level: ${ans.vizLevel??"—"}`,
+      answer:`Age: ${ans.age??"—"} | Sex: ${ans.sex??"—"} | Viz level: ${ans.vizLevel??"—"} | Chart freq: ${ans.chartFreq??"—"}`,
       correct:null,totalSec:timeFmt(ans.totalMs),exploreSec:"—",answerSec:"—"};
     if (t.type==="task_2q") {
       const o1=(t.q1?.options||[]).find(o=>o.value===ans.q1)?.label??ans.q1??"—";
@@ -563,7 +570,10 @@ function renderLikertOverlay(step, panel) {
 /* ── Overlay: demographics ───────────────────────────────────── */
 function renderDemographics(step, panel) {
   const ans=state.answers[step.id]||{};
-  const allDone=()=>ans.sex!=null && ans.vizLevel!=null;
+  const allDone=()=>{
+    const a=state.answers[step.id]||{};
+    return a.age!=null && String(a.age).trim()!=="" && a.sex!=null && a.vizLevel!=null && a.chartFreq!=null;
+  };
   const optGroup=(name,opts,selected)=>`<div class="task-options-col">
     ${opts.map(o=>`<label class="task-option ${selected===o.value?"selected":""}">
       <input type="radio" name="${name}" value="${o.value}" ${selected===o.value?"checked":""}/>
@@ -573,12 +583,22 @@ function renderDemographics(step, panel) {
     <h2 class="study-title">${step.title}</h2>
     <div class="study-body">
       <div class="task-likert-row">
+        <p class="task-likert-label">What is your age?</p>
+        <input type="number" id="demo_age" min="1" max="120" step="1" placeholder="Age"
+          value="${ans.age??""}"
+          style="width:100px;padding:7px 10px;border:2px solid #e2e8f0;border-radius:7px;font-size:13px"/>
+      </div>
+      <div class="task-likert-row">
         <p class="task-likert-label">What is your sex?</p>
         ${optGroup("demo_sex", step.sexOptions, ans.sex)}
       </div>
       <div class="task-likert-row">
         <p class="task-likert-label">How would you rate your own data visualization literacy / experience?</p>
         ${optGroup("demo_vizlevel", step.vizLevelOptions, ans.vizLevel)}
+      </div>
+      <div class="task-likert-row">
+        <p class="task-likert-label">How often do you interpret charts or graphs?</p>
+        ${optGroup("demo_chartfreq", step.chartFreqOptions, ans.chartFreq)}
       </div>
     </div>
     <div class="study-nav">
@@ -595,8 +615,13 @@ function renderDemographics(step, panel) {
       });
     });
   };
+  panel.querySelector("#demo_age")?.addEventListener("input",(e)=>{
+    saveSubAnswer(step.id,"age",e.target.value);
+    panel.querySelector("#study-next").disabled=!allDone();
+  });
   wireGroup("demo_sex","sex");
   wireGroup("demo_vizlevel","vizLevel");
+  wireGroup("demo_chartfreq","chartFreq");
   panel.querySelector("#study-next")?.addEventListener("click",advance);
   panel.querySelector("#study-prev")?.addEventListener("click",retreat);
 }
