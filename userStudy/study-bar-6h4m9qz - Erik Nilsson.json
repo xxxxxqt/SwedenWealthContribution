@@ -1,0 +1,540 @@
+{
+  "participantId": "6h4m9qz",
+  "studyVersion": "10.2",
+  "group": "bar",
+  "startTime": "2026-07-28T14:30:00.000Z",
+  "completedTime": "2026-07-28T15:09:10.057Z",
+  "answers": {
+    "guide_lz": {
+      "q1": "d",
+      "totalMs": 97504,
+      "q2": "d"
+    },
+    "guide_brk": {
+      "q1": "d",
+      "totalMs": 122393,
+      "q2": "b"
+    },
+    "guide_log": {
+      "q1": "b",
+      "totalMs": 72096,
+      "q2": "d"
+    },
+    "demographics": {
+      "age": "35",
+      "totalMs": 39464,
+      "sex": "male",
+      "vizLevel": "4",
+      "chartFreq": "daily"
+    },
+    "pre_likert": {
+      "income_eq": "5",
+      "totalMs": 23140,
+      "wealth_eq": "7"
+    },
+    "table_wealth": {
+      "q1": "c",
+      "totalMs": 137684,
+      "q2": "c"
+    },
+    "bar_i_linearzoom_jux": {
+      "q1": "c",
+      "totalMs": 186966,
+      "q2": "b"
+    },
+    "bar_w_linearzoom_jux": {
+      "q1": "c",
+      "totalMs": 145427,
+      "q2": "b"
+    },
+    "bar_i_linearzoom_sup": {
+      "q1": "c",
+      "totalMs": 144599,
+      "q2": "b"
+    },
+    "bar_w_linearzoom_sup": {
+      "q1": "c",
+      "totalMs": 103148,
+      "q2": "b"
+    },
+    "bar_i_linearzoom_ani": {
+      "q1": "c",
+      "totalMs": 116937,
+      "q2": "b"
+    },
+    "bar_w_linearzoom_ani": {
+      "q1": "c",
+      "totalMs": 163189,
+      "q2": "b"
+    },
+    "bar_i_linear_jux": {
+      "q1": "c",
+      "totalMs": 47864,
+      "q2": "b"
+    },
+    "bar_w_linear_jux": {
+      "q1": "c",
+      "totalMs": 55198,
+      "q2": "b"
+    },
+    "bar_i_linear_sup": {
+      "q1": "c",
+      "totalMs": 34534,
+      "q2": "b"
+    },
+    "bar_w_linear_sup": {
+      "q1": "b",
+      "totalMs": 72732,
+      "q2": "b"
+    },
+    "bar_i_linear_ani": {
+      "q1": "c",
+      "totalMs": 69283,
+      "q2": "b"
+    },
+    "bar_w_linear_ani": {
+      "q1": "c",
+      "totalMs": 109593,
+      "q2": "b"
+    },
+    "bar_i_break_jux": {
+      "q1": "c",
+      "totalMs": 76373,
+      "q2": "b"
+    },
+    "bar_w_break_jux": {
+      "q1": "c",
+      "totalMs": 44018,
+      "q2": "b"
+    },
+    "bar_i_break_sup": {
+      "q1": "b",
+      "totalMs": 37034,
+      "q2": "b"
+    },
+    "bar_w_break_sup": {
+      "q1": "c",
+      "totalMs": 31163,
+      "q2": "b"
+    },
+    "bar_i_break_ani": {
+      "q1": "c",
+      "totalMs": 69561,
+      "q2": "b"
+    },
+    "bar_w_break_ani": {
+      "q1": "b",
+      "totalMs": 59777,
+      "q2": "b"
+    },
+    "bar_i_log_jux": {
+      "q1": "c",
+      "totalMs": 27284,
+      "q2": "b"
+    },
+    "bar_w_log_jux": {
+      "q1": "c",
+      "totalMs": 59181,
+      "q2": "b"
+    },
+    "bar_i_log_sup": {
+      "q1": "b",
+      "totalMs": 26326,
+      "q2": "b"
+    },
+    "bar_w_log_sup": {
+      "q1": "c",
+      "totalMs": 27185,
+      "q2": "b"
+    },
+    "bar_i_log_ani": {
+      "q1": "b",
+      "totalMs": 58329,
+      "q2": "b"
+    },
+    "bar_w_log_ani": {
+      "q1": "c",
+      "totalMs": 59335,
+      "q2": "b"
+    },
+    "post_likert": {
+      "income_eq": "6",
+      "totalMs": 32740,
+      "wealth_eq": "9"
+    }
+  },
+  "summary": [
+    {
+      "id": "guide_lz",
+      "phase": "Y-axis Guide",
+      "type": "task_2q",
+      "isGuide": true,
+      "answered": true,
+      "answer": "Q1: Top 0.001% | Q2: Bottom 50%",
+      "correct": true,
+      "totalSec": "97.5s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "guide_brk",
+      "phase": "Y-axis Guide",
+      "type": "task_2q",
+      "isGuide": true,
+      "answered": true,
+      "answer": "Q1: Top 0.001% | Q2: A large range of values is skipped so both low and high groups fit in one chart",
+      "correct": true,
+      "totalSec": "122.4s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "guide_log",
+      "phase": "Y-axis Guide",
+      "type": "task_2q",
+      "isGuide": true,
+      "answered": true,
+      "answer": "Q1: A multiplication by approximately 10 | Q2: Bottom 50% (negative wealth — net debt)",
+      "correct": true,
+      "totalSec": "72.1s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "demographics",
+      "phase": "Background",
+      "type": "demographics",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Age: 35 | Sex: male | Viz level: 4 | Chart freq: daily",
+      "correct": null,
+      "totalSec": "39.5s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "pre_likert",
+      "phase": "Before the charts",
+      "type": "likert_overlay",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Income eq: 5/10 | Wealth eq: 7/10",
+      "correct": null,
+      "totalSec": "23.1s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "table_wealth",
+      "phase": "Baseline — Table",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 14 million SEK (≈ 1.4 × 10⁷) | Q2: About 200 times larger or more",
+      "correct": true,
+      "totalSec": "137.7s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linearzoom_jux",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 800,000 SEK (≈ 8 × 10⁵) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "187.0s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linearzoom_jux",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 84 million SEK (≈ 8.4 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "145.4s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linearzoom_sup",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 9.4 million SEK (≈ 9.4 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "144.6s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linearzoom_sup",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 15 million SEK (≈ 1.5 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "103.1s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linearzoom_ani",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 6.8 million SEK (≈ 6.8 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "116.9s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linearzoom_ani",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 438 million SEK (≈ 4.38 × 10⁸) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "163.2s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linear_jux",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 1.2 million SEK (≈ 1.2 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "47.9s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linear_jux",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 56 million SEK (≈ 5.6 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "55.2s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linear_sup",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 18.2 million SEK (≈ 1.82 × 10⁷) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "34.5s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linear_sup",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 4.5 million SEK (≈ 4.5 × 10⁶) | Q2: About 20–50 times larger",
+      "correct": false,
+      "totalSec": "72.7s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_linear_ani",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 3.5 million SEK (≈ 3.5 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "69.3s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_linear_ani",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 41 million SEK (≈ 4.1 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "109.6s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_break_jux",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 1.4 million SEK (≈ 1.4 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "76.4s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_break_jux",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 32 million SEK (≈ 3.2 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "44.0s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_break_sup",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 14.6 million SEK (≈ 1.46 × 10⁷) | Q2: About 50–100 times larger",
+      "correct": false,
+      "totalSec": "37.0s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_break_sup",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 5 million SEK (≈ 5 × 10⁶) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "31.2s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_break_ani",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 6.8 million SEK (≈ 6.8 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "69.6s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_break_ani",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 220 million SEK (≈ 2.2 × 10⁸) | Q2: About 20–50 times larger",
+      "correct": false,
+      "totalSec": "59.8s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_log_jux",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 1.5 million SEK (≈ 1.5 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": true,
+      "totalSec": "27.3s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_log_jux",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 19 million SEK (≈ 1.9 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "59.2s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_log_sup",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 13.4 million SEK (≈ 1.34 × 10⁷) | Q2: About 50–100 times larger",
+      "correct": false,
+      "totalSec": "26.3s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_log_sup",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 3 million SEK (≈ 3 × 10⁶) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "27.2s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_i_log_ani",
+      "phase": "Income — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 1.8 million SEK (≈ 1.8 × 10⁶) | Q2: About 50–100 times larger",
+      "correct": false,
+      "totalSec": "58.3s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "bar_w_log_ani",
+      "phase": "Wealth — Bar Chart",
+      "type": "task_2q",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Q1: Around 41 million SEK (≈ 4.1 × 10⁷) | Q2: About 20–50 times larger",
+      "correct": true,
+      "totalSec": "59.3s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    },
+    {
+      "id": "post_likert",
+      "phase": "After all charts",
+      "type": "likert_overlay",
+      "isGuide": false,
+      "answered": true,
+      "answer": "Income eq: 6/10 | Wealth eq: 9/10",
+      "correct": null,
+      "totalSec": "32.7s",
+      "exploreSec": "—",
+      "answerSec": "—"
+    }
+  ]
+}
